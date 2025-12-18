@@ -96,6 +96,7 @@ The web interface provides:
 <p align="center">
 <img width="1088" height="860" alt="image" src="https://github.com/user-attachments/assets/c02a0b8c-1656-4c2d-80b2-3915045386ea" />
 </p>
+
 ---
 
 ## Serial console for advanced users
@@ -107,6 +108,7 @@ The web interface provides:
 <p align="center">
 <img width="1582" height="722" alt="image" src="https://github.com/user-attachments/assets/5b7454cb-5034-4c70-b23f-9d14c9c04934" />
 </p>  
+
 ---
 
 ## Hardware
@@ -271,6 +273,13 @@ curl http://192.168.4.1/api/metrics
 See [API Documentation](docs/WEB_API.md) for full endpoint list.
 
 ---
+
+## What ACRouter Is Not
+
+- Not a battery inverter
+- Not a smart plug or relay controller
+- Not a certified grid protection device
+- Not suitable for inductive or electronic loads
 
 ## Safety Notice
 
