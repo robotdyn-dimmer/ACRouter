@@ -164,6 +164,8 @@ ACRouter supports 6 operating modes to cover different use cases:
 | **MANUAL** | Fixed dimmer level | Testing, night tariff |
 | **BOOST** | Maximum power (100%) | Fast heating |
 
+* AUTO and ECO modes are the primary solar routing modes used in grid-connected systems.
+
 ### AUTO Mode — The Heart of Solar Routing
 
 ```
