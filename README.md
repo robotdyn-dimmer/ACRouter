@@ -53,7 +53,7 @@ Typical daily behavior of a grid-connected PV system with a water heater load.
 | Battery required | Yes (for storage) | No |
 | Energy wasted/exported | Significant | Minimal |
 | Grid interaction | Uncontrolled export | Controlled, grid-friendly |
-| Overall energy cost | Higher | Lower |
+| Overall energy cost | Higher | Lower - reduce 30% |
 
 ## Features
 
