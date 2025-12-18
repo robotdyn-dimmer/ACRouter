@@ -1,10 +1,6 @@
 # ACRouter — Open Source Solar Router Controller
 
 <p align="center">
-  <img src="docs/images/acrouter-logo.png" alt="ACRouter Logo" width="200">
-</p>
-
-<p align="center">
   <strong>Intelligent AC Power Router for Solar Energy Management</strong>
 </p>
 
@@ -108,7 +104,7 @@ The web interface provides:
 <p align="center">
 <img width="1582" height="722" alt="image" src="https://github.com/user-attachments/assets/5b7454cb-5034-4c70-b23f-9d14c9c04934" />
 </p>  
-
+See [Console commands](docs/07_COMMANDS.md) Complete guide for ACRouter serial terminal and REST API commands.
 ---
 
 ## Hardware
@@ -130,26 +126,19 @@ ACRouter runs on ESP32-based development boards designed for AC power control.
 
 | Sensor | Purpose | Link |
 |--------|---------|------|
-| **ZMPT107+ Zero-Cross Detector** | AC Voltage Measurement & AC waveform synchronization | [🛒 Shop](#) |
-| **SCT-013** | Current Transformer (current variation) | [🛒 Shop](#) |
-| **ACS-712** | Current Transformer (current variation) | [🛒 Shop](#) |
+| **ZMPT107+ Zero-Cross Detector** | AC Voltage Measurement & AC waveform synchronization | [Guide](https://www.rbgrid.io/application-hardware-connection#table_of_content_heading_connection-diagram) |
+| **SCT-013** | Current Transformer (current variation) | [Guide](https://www.rbgrid.io/application-hardware-connection#table_of_content_heading_connection-diagram) |
+| **ACS-712** | Current Transformer (current variation) | [Guide](https://www.rbgrid.io/application-hardware-connection#table_of_content_heading_connection-diagram) |
 
 
 ### Dimmers & Control
 
 | Module | Purpose | Link |
 |--------|---------|------|
-| **AC Dimmer Module** | Phase-angle power control | [🛒 Shop](#) |
-| **Relay Module** | On/off load switching | [🛒 Shop](#) |
+| **AC Dimmer Module** | Phase-angle power control | [Guide](https://www.rbdimmer.com//docs/hardware-connection) |
 
-### Complete Kits
 
-| Kit | Contents | Link |
-|-----|----------|------|
-| **ACRouter Starter Kit** | Controller + 1 dimmer + voltage sensor + 1 CT | [🛒 Shop](#) |
-| **ACRouter Pro Kit** | Controller + 2 dimmers + all sensors + enclosure | [🛒 Shop](#) |
-
-> 💡 **Note:** ACRouter is designed to work with hardware from [rbdimmer.com](https://rbdimmer.com)
+> 💡 **Note:** ACRouter is designed to work with hardware from [rbdimmer.com](https://rbdimmer.com) and any opens source DIY modules
 
 ---
 
@@ -188,7 +177,7 @@ ACRouter supports 6 operating modes to cover different use cases:
 
 ```bash
 # Clone the repository
-git clone https://github.com/[your-repo]/ACRouter.git
+git clone https://github.com/robotdyn-dimmer/ACRouter.git
 cd ACRouter
 
 # Set up ESP-IDF environment
@@ -207,7 +196,6 @@ After flashing, the device creates a WiFi network:
 | Setting | Value |
 |---------|-------|
 | **SSID** | `ACRouter_XXXXXX` |
-| **Password** | `12345678` |
 | **IP Address** | `192.168.4.1` |
 
 ### 3. Configure via Web Interface
@@ -224,7 +212,7 @@ After flashing, the device creates a WiFi network:
 
 | Document | Description |
 |----------|-------------|
-| [📖 User Guide](docs/USER_GUIDE.md) | Complete documentation index |
+| [📖 Application Overview](docs/01_OVERVIEW.md) | Complete documentation |
 | [🔧 Hardware Reference](docs/AC_POWER_ROUTER_HARDWARE.md) | Pin assignments and specifications |
 | [⚙️ Compilation Guide](docs/02_COMPILATION.md) | Build instructions and troubleshooting |
 | [📐 Architecture](docs/03_STRUCTURE.md) | Software modules and API |
@@ -248,7 +236,7 @@ curl -X POST http://192.168.4.1/api/mode -d '{"mode": 1}'
 curl http://192.168.4.1/api/metrics
 ```
 
-See [API Documentation](docs/WEB_API.md) for full endpoint list.
+See [API Documentation](docs/08_WEB_API_GET.md) for full endpoint list.
 
 ---
 
@@ -300,7 +288,7 @@ ACRouter is open-source software. See [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-- **RBDimmer** — Hardware platform and dimmer library
+- **RBDimmer** — Hardware platform and dimmer library [LIBRARY](https://github.com/robotdyn-dimmer/rbdimmerESP32)
 - **ESP-IDF** — Espressif IoT Development Framework
 - **ArduinoJson** — JSON library for embedded systems
 - **Community** — Contributors and testers
