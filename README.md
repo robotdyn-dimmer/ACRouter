@@ -117,6 +117,8 @@ The web interface provides:
 
 ACRouter runs on ESP32-based development boards designed for AC power control.
 
+<img width="1920" height="787" alt="image" src="https://github.com/user-attachments/assets/46ff5f1d-c459-40ed-bd4c-51fe9982f69b" />
+
 | Component | Specification |
 |-----------|--------------|
 | **MCU** | ESP32-WROOM-32 / ESP32-WROVER |
@@ -215,32 +217,6 @@ After flashing, the device creates a WiFi network:
 3. Configure hardware GPIO pins
 4. Connect to your home WiFi
 5. Select AUTO mode and start saving energy!
-
-### 4. Wire Your System
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Solar     │────▶│    Grid     │────▶│   House     │
-│   Inverter  │     │   Meter     │     │   Loads     │
-└─────────────┘     └──────┬──────┘     └─────────────┘
-                          │
-                    CT Sensor (Grid)
-                          │
-                    ┌─────▼─────┐
-                    │  ACRouter │
-                    │Controller │
-                    └─────┬─────┘
-                          │
-                    ┌─────▼─────┐
-                    │  Dimmer   │
-                    │  Module   │
-                    └─────┬─────┘
-                          │
-                    ┌─────▼─────┐
-                    │  Water    │
-                    │  Heater   │
-                    └───────────┘
-```
 
 ---
 
