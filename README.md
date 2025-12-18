@@ -82,11 +82,26 @@ Typical daily behavior of a grid-connected PV system with a water heater load.
 - Multiple dimmer channels
 - Relay outputs for on/off loads
 
-**Modern web dashboard**
+---
+
+## Web Dashboard
+
+<p align="center">
+  <img src="docs/images/dashboard-preview.png" alt="Dashboard Preview" width="600">
+</p>
+
+The web interface provides:
+- **Real-time metrics** — Voltage, current, power for all channels
+- **Mode selection** — One-click switching between modes
+- **Manual control** — Slider for direct dimmer control
+- **WiFi settings** — Network scanning and connection
+- **Hardware config** — GPIO pin assignment without reflashing
 
 <img width="1088" height="860" alt="image" src="https://github.com/user-attachments/assets/c02a0b8c-1656-4c2d-80b2-3915045386ea" />
 
-**Serial console for advanced users**
+---
+
+## Serial console for advanced users
 
 <img width="1582" height="722" alt="image" src="https://github.com/user-attachments/assets/5b7454cb-5034-4c70-b23f-9d14c9c04934" />
 ---
@@ -219,21 +234,6 @@ After flashing, the device creates a WiFi network:
                     │  Heater   │
                     └───────────┘
 ```
-
----
-
-## Web Dashboard
-
-<p align="center">
-  <img src="docs/images/dashboard-preview.png" alt="Dashboard Preview" width="600">
-</p>
-
-The web interface provides:
-- **Real-time metrics** — Voltage, current, power for all channels
-- **Mode selection** — One-click switching between modes
-- **Manual control** — Slider for direct dimmer control
-- **WiFi settings** — Network scanning and connection
-- **Hardware config** — GPIO pin assignment without reflashing
 
 ---
 
