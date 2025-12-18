@@ -42,6 +42,18 @@
 | Fixed on/off control wastes energy | Smooth phase-angle dimming for precise control |
 
 ---
+Typical daily behavior of a grid-connected PV system with a water heater load.
+
+| Parameter | Without ACRouter | With ACRouter |
+|---------|------------------|---------------|
+| Daytime solar export | High | Low |
+| Self-consumption ratio | ~40–50% | ~70–85% |
+| Water heating source | Grid (evening/night) | Solar surplus (daytime) |
+| Evening grid import | High | Reduced |
+| Battery required | Yes (for storage) | No |
+| Energy wasted/exported | Significant | Minimal |
+| Grid interaction | Uncontrolled export | Controlled, grid-friendly |
+| Overall energy cost | Higher | Lower |
 
 ## Features
 
