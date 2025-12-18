@@ -30,6 +30,8 @@
 
 **ACRouter** is an open-source controller that automatically redirects excess solar energy to resistive loads (like water heaters) instead of exporting it to the grid. It helps you maximize self-consumption of your solar power and reduce electricity costs.
 
+<img width="4157" height="4547" alt="ACrouter_map" src="https://github.com/user-attachments/assets/c6383e47-8361-40e4-8c87-38d9490ab20c" />
+
 ### Why ACRouter?
 
 | Problem | Solution |
