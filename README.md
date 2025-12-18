@@ -104,7 +104,7 @@ The web interface provides:
 <p align="center">
 <img width="1582" height="722" alt="image" src="https://github.com/user-attachments/assets/5b7454cb-5034-4c70-b23f-9d14c9c04934" />
 </p>  
-See [Console commands](docs/07_COMMANDS.md) Complete guide for ACRouter serial terminal and REST API commands.
+See [🗺️ Commands](docs/07_COMMANDS.md) Complete guide for ACRouter serial terminal and REST API commands.
 ---
 
 ## Hardware
