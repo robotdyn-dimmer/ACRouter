@@ -82,6 +82,11 @@ Typical daily behavior of a grid-connected PV system with a water heater load.
 - Multiple dimmer channels
 - Relay outputs for on/off loads
 
+**Modern web dashboard**
+<img width="1088" height="860" alt="image" src="https://github.com/user-attachments/assets/c02a0b8c-1656-4c2d-80b2-3915045386ea" />
+
+**Serial console for advanced users**
+<img width="1582" height="722" alt="image" src="https://github.com/user-attachments/assets/5b7454cb-5034-4c70-b23f-9d14c9c04934" />
 ---
 
 ## Hardware
