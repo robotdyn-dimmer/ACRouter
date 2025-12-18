@@ -86,10 +86,6 @@ Typical daily behavior of a grid-connected PV system with a water heater load.
 
 ## Web Dashboard
 
-<p align="center">
-  <img src="docs/images/dashboard-preview.png" alt="Dashboard Preview" width="600">
-</p>
-
 The web interface provides:
 - **Real-time metrics** — Voltage, current, power for all channels
 - **Mode selection** — One-click switching between modes
@@ -97,13 +93,20 @@ The web interface provides:
 - **WiFi settings** — Network scanning and connection
 - **Hardware config** — GPIO pin assignment without reflashing
 
+<p align="center">
 <img width="1088" height="860" alt="image" src="https://github.com/user-attachments/assets/c02a0b8c-1656-4c2d-80b2-3915045386ea" />
-
+</p>
 ---
 
 ## Serial console for advanced users
 
+  - Real-time metrics display
+  - Command line for hardware and device parameter configuration
+  - Operating mode selection
+
+<p align="center">
 <img width="1582" height="722" alt="image" src="https://github.com/user-attachments/assets/5b7454cb-5034-4c70-b23f-9d14c9c04934" />
+</p>  
 ---
 
 ## Hardware
