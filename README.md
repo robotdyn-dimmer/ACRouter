@@ -113,7 +113,8 @@ See [🗺️ Commands](docs/07_COMMANDS.md) Complete guide for ACRouter serial t
 
 ACRouter runs on ESP32-based development boards designed for AC power control.
 
-<img width="1920" height="787" alt="image" src="https://github.com/user-attachments/assets/46ff5f1d-c459-40ed-bd4c-51fe9982f69b" />
+![ACRouter-modules-simple-1920x](https://github.com/user-attachments/assets/e0427234-266d-47d2-8b2b-6603ed27ea5a)
+
 
 | Component | Specification |
 |-----------|--------------|
