@@ -1,0 +1,70 @@
+# ESP-IDF Build files
+build/
+sdkconfig
+sdkconfig.old
+*.bin
+*.elf
+*.map
+
+# Managed Components (downloaded automatically)
+managed_components/
+dependencies.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+*.o
+*.a
+*.d
+*.lst
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+NUL
+
+# Certificate and key files
+*.pem
+*.key
+*.crt
+
+# Local configuration
+sdkconfig.local
+local.env
+
+# Documentation (managed separately on GitHub)
+docs/
+specification/
+README.md
+*.md
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage

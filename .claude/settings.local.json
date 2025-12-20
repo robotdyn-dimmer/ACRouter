@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(idf.py build:*)",
+      "Bash(ren hal acrouter_hal)",
+      "Bash(dir:*)",
+      "Bash(git clone:*)",
+      "Bash(ls:*)",
+      "Bash(cmd /c build.bat)",
+      "Bash(cmd /c \"echo %IDF_PATH% && echo %PATH%\")",
+      "Bash(mkdir:*)",
+      "Bash(del \"c:\\Users\\shavk\\Documents\\ESP-PROJECTS\\ACRouter\\ACRouter-project\\components\\comm\\include\\WiFiDefaults.h\")",
+      "Bash(rm:*)",
+      "Bash(cmd /c \"cd /d c:\\Users\\shavk\\Documents\\ESP-PROJECTS\\ACRouter\\ACRouter-project && idf.py build\")",
+      "Bash(ren COMMANDS.md 07_COMMANDS_EN.md)",
+      "Bash(move:*)",
+      "Bash(where:*)",
+      "Bash(cmd /c \"cd /d c:\\Users\\shavk\\Documents\\ESP-PROJECTS\\ACRouter\\ACRouter-project && idf.py build 2>&1 | findstr /C:\"error\" /C:\"Error\" /C:\"Linking\" /C:\"Building \")",
+      "Bash(cmd //c \"idf.py build\")",
+      "Bash(git config:*)",
+      "Bash(dir /b /s \"c:\\Users\\shavk\\Documents\\ESP-PROJECTS\\ACRouter\\ACRouter-project\\docs\")",
+      "Bash(findstr:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+[submodule "components/rbdimmer"]
+	path = components/rbdimmer
+	url = https://github.com/robotdyn-dimmer/rbdimmerESP32.git
