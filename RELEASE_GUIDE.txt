@@ -2,99 +2,99 @@
 ACRouter Release Guide
 ================================
 
-Автоматизированная публикация релизов на GitHub с помощью GitHub CLI.
+Automated GitHub release publishing using GitHub CLI.
 
-ИСПОЛЬЗОВАНИЕ
--------------
+USAGE
+-----
 
 Windows (PowerShell):
-    .\release.bat v1.0.0 "Описание релиза"
-    .\release.bat v1.0.0 --skip-build  (использовать готовые .bin файлы)
+    .\release.bat v1.0.0 "Release description"
+    .\release.bat v1.0.0 --skip-build  (use existing .bin files)
 
 Linux/Mac:
     chmod +x release.sh
-    ./release.sh v1.0.0 "Описание релиза"
+    ./release.sh v1.0.0 "Release description"
 
-ПРИМЕРЫ
--------
+EXAMPLES
+--------
 
-Создать релиз v1.0.0 с полной сборкой:
+Create v1.0.0 release with full build:
     .\release.bat v1.0.0 "Initial release"
 
-Создать релиз v1.1.0 используя готовые файлы:
+Create v1.1.0 release using existing binaries:
     .\release.bat v1.1.0 "Bug fixes and improvements" --skip-build
 
-Создать релиз без описания (будет использовано стандартное):
+Create release without description (default will be used):
     .\release.bat v1.2.0 --skip-build
 
-ЧТО ДЕЛАЕТ СКРИПТ
------------------
+WHAT THE SCRIPT DOES
+--------------------
 
-1. Собирает проект (idf.py build) или пропускает, если --skip-build
-2. Создает папку build/release-vX.X.X
-3. Копирует все необходимые .bin файлы:
+1. Builds the project (idf.py build) or skips if --skip-build
+2. Creates build/release-vX.X.X directory
+3. Copies all required .bin files:
    - bootloader.bin
    - partition-table.bin
    - ACRouter-project.bin
    - ota_data_initial.bin
    - flash_args
-4. Создает flash скрипты для пользователей:
+4. Creates flash scripts for users:
    - flash.bat (Windows)
    - flash.sh (Linux/Mac)
-5. Создает FLASH_README.txt с инструкциями
-6. Публикует релиз на GitHub с прикрепленными файлами
+5. Creates FLASH_README.txt with instructions
+6. Publishes release to GitHub with attached files
 
-ОПЦИЯ --skip-build
-------------------
+--skip-build OPTION
+-------------------
 
-Используйте --skip-build если:
-- Проект уже собран (есть файлы в build/)
-- ESP-IDF окружение не активировано
-- Хотите быстро переопубликовать релиз
+Use --skip-build when:
+- Project is already built (build/ files exist)
+- ESP-IDF environment is not activated
+- You want to quickly republish a release
 
-ВАЖНО: Файлы build/*.bin должны существовать!
+IMPORTANT: build/*.bin files must exist!
 
-ПОСЛЕ ПУБЛИКАЦИИ
+AFTER PUBLISHING
 ----------------
 
-Пользователи смогут:
-1. Скачать релиз: https://github.com/robotdyn-dimmer/ACRouter/releases
-2. Распаковать архив
-3. Прошить ESP32 одной командой:
+Users will be able to:
+1. Download release: https://github.com/robotdyn-dimmer/ACRouter/releases
+2. Extract archive
+3. Flash ESP32 with a single command:
 
    Windows: flash.bat COM5
    Linux:   ./flash.sh /dev/ttyUSB0
 
-ОБНОВЛЕНИЕ ВЕРСИИ
------------------
+VERSION UPDATE
+--------------
 
-Перед созданием нового релиза обновите версию в CMakeLists.txt:
+Before creating a new release, update version in CMakeLists.txt:
 
     project(ACRouter-project VERSION 1.1.0)
 
-ТРЕБОВАНИЯ
-----------
+REQUIREMENTS
+------------
 
-- GitHub CLI (gh) установлен и авторизован
-- ESP-IDF настроен (idf.py доступен)
-- Проект успешно собирается
+- GitHub CLI (gh) installed and authenticated
+- ESP-IDF configured (idf.py available)
+- Project builds successfully
 
-ПРОВЕРКА
---------
+VERIFICATION
+------------
 
-Проверить статус GitHub CLI:
+Check GitHub CLI status:
     gh auth status
 
-Проверить существующие релизы:
+Check existing releases:
     gh release list
 
-Просмотреть релиз:
+View a release:
     gh release view v1.0.0
 
-УДАЛЕНИЕ РЕЛИЗА
----------------
+DELETING A RELEASE
+------------------
 
-Если нужно удалить релиз:
+If you need to delete a release:
     gh release delete v1.0.0
 
 ================================
