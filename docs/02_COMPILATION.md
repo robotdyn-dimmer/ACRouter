@@ -1,5 +1,7 @@
 # 2. Compilation Requirements
 
+> **💡 Don't want to compile?** Pre-built firmware binaries are available on the [GitHub Releases](https://github.com/robotdyn-dimmer/ACRouter/releases) page. Simply download, extract, and flash using the included scripts - no compilation required!
+ 
 ## 2.1 Platform and Tools
 
 ### Main Platform
@@ -450,5 +452,26 @@ Error: NVS key exceeds 15 characters
 ```
 
 **Solution:** NVS keys are limited to 15 characters. Use abbreviations (see `HardwareConfigManager.h`).
+
+### Issue 5: Don't Want to Deal with Build Issues?
+
+**Solution:** Use pre-built firmware binaries!
+
+If you're experiencing persistent build problems or simply want to get started quickly:
+
+1. Visit [GitHub Releases](https://github.com/robotdyn-dimmer/ACRouter/releases)
+2. Download the latest firmware release
+3. Extract the archive containing:
+   - `bootloader.bin`
+   - `partition-table.bin`
+   - `ACRouter-project.bin`
+   - `ota_data_initial.bin`
+   - `flash.bat` / `flash.sh` (flash scripts)
+   - `FLASH_README.txt` (instructions)
+4. Flash using the included script:
+   - **Windows:** `flash.bat COM5`
+   - **Linux/Mac:** `./flash.sh /dev/ttyUSB0`
+
+No ESP-IDF installation or compilation required!
 
 ---
