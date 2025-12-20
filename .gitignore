@@ -29,6 +29,7 @@ venv/
 
 # IDE
 .idea/
+.claude/
 *.swp
 *.swo
 *~
