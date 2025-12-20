@@ -11,44 +11,61 @@ echo ========================================
 REM Check if version tag is provided
 if "%1"=="" (
     echo Error: Version tag required
-    echo Usage: release.bat v1.0.0 [release notes]
+    echo Usage: release.bat v1.0.0 [release notes] [--skip-build]
     exit /b 1
 )
 
 set VERSION=%1
-set RELEASE_NOTES=%2
+set "RELEASE_NOTES=%~2"
+set SKIP_BUILD=0
+
+REM Check for --skip-build flag
+if "%~3"=="--skip-build" set SKIP_BUILD=1
+if "%~2"=="--skip-build" (
+    set SKIP_BUILD=1
+    set "RELEASE_NOTES="
+)
 
 REM Default release notes if not provided
-if "%RELEASE_NOTES%"=="" (
-    set RELEASE_NOTES=ACRouter %VERSION% - Binary firmware release
+if "!RELEASE_NOTES!"=="" (
+    set "RELEASE_NOTES=ACRouter !VERSION! - Binary firmware release"
 )
 
 echo.
-echo Version: %VERSION%
-echo Notes: %RELEASE_NOTES%
+echo Version: !VERSION!
+echo Notes: !RELEASE_NOTES!
+if !SKIP_BUILD!==1 echo Skip build: YES
 echo.
 
 REM Step 1: Build the project
-echo [1/5] Building project...
-call idf.py build
-if errorlevel 1 (
-    echo Build failed!
-    exit /b 1
+if !SKIP_BUILD!==0 (
+    echo [1/5] Building project...
+    call idf.py build
+    if errorlevel 1 (
+        echo Build failed!
+        exit /b 1
+    )
+) else (
+    echo [1/5] Skipping build - using existing binaries...
+    if not exist "build\ACRouter-project.bin" (
+        echo Error: Binary files not found! Run without --skip-build first.
+        exit /b 1
+    )
 )
 
 REM Step 2: Create release directory
 echo [2/5] Preparing release files...
-set RELEASE_DIR=build\release-%VERSION%
-if exist "%RELEASE_DIR%" rmdir /s /q "%RELEASE_DIR%"
-mkdir "%RELEASE_DIR%"
+set "RELEASE_DIR=build\release-!VERSION!"
+if exist "!RELEASE_DIR!" rmdir /s /q "!RELEASE_DIR!"
+mkdir "!RELEASE_DIR!"
 
 REM Step 3: Copy binary files
 echo [3/5] Copying binary files...
-copy build\bootloader\bootloader.bin "%RELEASE_DIR%\" >nul
-copy build\partition_table\partition-table.bin "%RELEASE_DIR%\" >nul
-copy build\ACRouter-project.bin "%RELEASE_DIR%\" >nul
-copy build\ota_data_initial.bin "%RELEASE_DIR%\" >nul
-copy build\flash_args "%RELEASE_DIR%\" >nul
+copy build\bootloader\bootloader.bin "!RELEASE_DIR!\" >nul
+copy build\partition_table\partition-table.bin "!RELEASE_DIR!\" >nul
+copy build\ACRouter-project.bin "!RELEASE_DIR!\" >nul
+copy build\ota_data_initial.bin "!RELEASE_DIR!\" >nul
+copy build\flash_args "!RELEASE_DIR!\" >nul
 
 REM Step 4: Create flash script for users
 echo [4/5] Creating flash script...
@@ -85,7 +102,7 @@ echo echo.
 echo echo ========================================
 echo echo Flash completed successfully!
 echo echo ========================================
-) > "%RELEASE_DIR%\flash.bat"
+) > "!RELEASE_DIR!\flash.bat"
 
 REM Create README for release
 (
@@ -132,7 +149,7 @@ echo.
 echo ## More Information
 echo.
 echo Visit: https://github.com/robotdyn-dimmer/ACRouter
-) > "%RELEASE_DIR%\FLASH_README.txt"
+) > "!RELEASE_DIR!\FLASH_README.txt"
 
 REM Create Linux/Mac flash script
 (
@@ -175,34 +192,34 @@ echo echo ""
 echo echo "========================================"
 echo echo "Flash completed successfully!"
 echo echo "========================================"
-) > "%RELEASE_DIR%\flash.sh"
+) > "!RELEASE_DIR!\flash.sh"
 
 REM Step 5: Create GitHub release and upload files
 echo [5/5] Creating GitHub release...
-gh release create %VERSION% ^
-    --title "ACRouter %VERSION%" ^
-    --notes "%RELEASE_NOTES%" ^
-    "%RELEASE_DIR%\bootloader.bin#Bootloader" ^
-    "%RELEASE_DIR%\partition-table.bin#Partition Table" ^
-    "%RELEASE_DIR%\ACRouter-project.bin#Main Application" ^
-    "%RELEASE_DIR%\ota_data_initial.bin#OTA Data" ^
-    "%RELEASE_DIR%\flash.bat#Flash Script (Windows)" ^
-    "%RELEASE_DIR%\flash.sh#Flash Script (Linux/Mac)" ^
-    "%RELEASE_DIR%\FLASH_README.txt#Flash Instructions"
+gh release create !VERSION! ^
+    --title "ACRouter !VERSION!" ^
+    --notes "!RELEASE_NOTES!" ^
+    "!RELEASE_DIR!\bootloader.bin#Bootloader" ^
+    "!RELEASE_DIR!\partition-table.bin#Partition Table" ^
+    "!RELEASE_DIR!\ACRouter-project.bin#Main Application" ^
+    "!RELEASE_DIR!\ota_data_initial.bin#OTA Data" ^
+    "!RELEASE_DIR!\flash.bat#Flash Script (Windows)" ^
+    "!RELEASE_DIR!\flash.sh#Flash Script (Linux/Mac)" ^
+    "!RELEASE_DIR!\FLASH_README.txt#Flash Instructions"
 
 if errorlevel 1 (
     echo Failed to create GitHub release!
-    echo Files are available in: %RELEASE_DIR%
+    echo Files are available in: !RELEASE_DIR!
     exit /b 1
 )
 
 echo.
 echo ========================================
-echo Release %VERSION% created successfully!
+echo Release !VERSION! created successfully!
 echo ========================================
 echo.
-echo Release URL: https://github.com/robotdyn-dimmer/ACRouter/releases/tag/%VERSION%
-echo Files directory: %RELEASE_DIR%
+echo Release URL: https://github.com/robotdyn-dimmer/ACRouter/releases/tag/!VERSION!
+echo Files directory: !RELEASE_DIR!
 echo.
 
 endlocal
