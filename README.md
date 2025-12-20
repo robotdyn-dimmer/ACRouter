@@ -176,6 +176,18 @@ ACRouter supports 6 operating modes to cover different use cases:
 
 ### 1. Flash the Firmware
 
+**Option A: Use Pre-built Binaries (Recommended for Quick Start)**
+
+No compilation required! Download the latest firmware and flash it directly:
+
+1. Download the latest release from [GitHub Releases](https://github.com/robotdyn-dimmer/ACRouter/releases)
+2. Extract the archive
+3. Flash using the included script:
+   - **Windows:** `flash.bat COM5`
+   - **Linux/Mac:** `./flash.sh /dev/ttyUSB0`
+
+**Option B: Build from Source**
+
 ```bash
 # Clone the repository
 git clone https://github.com/robotdyn-dimmer/ACRouter.git
