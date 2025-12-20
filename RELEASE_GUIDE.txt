@@ -7,8 +7,9 @@ ACRouter Release Guide
 ИСПОЛЬЗОВАНИЕ
 -------------
 
-Windows:
-    release.bat v1.0.0 "Описание релиза"
+Windows (PowerShell):
+    .\release.bat v1.0.0 "Описание релиза"
+    .\release.bat v1.0.0 --skip-build  (использовать готовые .bin файлы)
 
 Linux/Mac:
     chmod +x release.sh
@@ -17,19 +18,19 @@ Linux/Mac:
 ПРИМЕРЫ
 -------
 
-Создать релиз v1.0.0:
-    release.bat v1.0.0 "Initial release"
+Создать релиз v1.0.0 с полной сборкой:
+    .\release.bat v1.0.0 "Initial release"
 
-Создать релиз v1.1.0 с описанием:
-    release.bat v1.1.0 "Bug fixes and improvements"
+Создать релиз v1.1.0 используя готовые файлы:
+    .\release.bat v1.1.0 "Bug fixes and improvements" --skip-build
 
 Создать релиз без описания (будет использовано стандартное):
-    release.bat v1.2.0
+    .\release.bat v1.2.0 --skip-build
 
 ЧТО ДЕЛАЕТ СКРИПТ
 -----------------
 
-1. Собирает проект (idf.py build)
+1. Собирает проект (idf.py build) или пропускает, если --skip-build
 2. Создает папку build/release-vX.X.X
 3. Копирует все необходимые .bin файлы:
    - bootloader.bin
@@ -42,6 +43,16 @@ Linux/Mac:
    - flash.sh (Linux/Mac)
 5. Создает FLASH_README.txt с инструкциями
 6. Публикует релиз на GitHub с прикрепленными файлами
+
+ОПЦИЯ --skip-build
+------------------
+
+Используйте --skip-build если:
+- Проект уже собран (есть файлы в build/)
+- ESP-IDF окружение не активировано
+- Хотите быстро переопубликовать релиз
+
+ВАЖНО: Файлы build/*.bin должны существовать!
 
 ПОСЛЕ ПУБЛИКАЦИИ
 ----------------
