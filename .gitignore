@@ -65,6 +65,9 @@ specification/
 README.md
 *.md
 
+# Allow release guide
+!RELEASE_GUIDE.txt
+
 # Testing
 .pytest_cache/
 htmlcov/

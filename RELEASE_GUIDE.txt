@@ -1,0 +1,89 @@
+================================
+ACRouter Release Guide
+================================
+
+Автоматизированная публикация релизов на GitHub с помощью GitHub CLI.
+
+ИСПОЛЬЗОВАНИЕ
+-------------
+
+Windows:
+    release.bat v1.0.0 "Описание релиза"
+
+Linux/Mac:
+    chmod +x release.sh
+    ./release.sh v1.0.0 "Описание релиза"
+
+ПРИМЕРЫ
+-------
+
+Создать релиз v1.0.0:
+    release.bat v1.0.0 "Initial release"
+
+Создать релиз v1.1.0 с описанием:
+    release.bat v1.1.0 "Bug fixes and improvements"
+
+Создать релиз без описания (будет использовано стандартное):
+    release.bat v1.2.0
+
+ЧТО ДЕЛАЕТ СКРИПТ
+-----------------
+
+1. Собирает проект (idf.py build)
+2. Создает папку build/release-vX.X.X
+3. Копирует все необходимые .bin файлы:
+   - bootloader.bin
+   - partition-table.bin
+   - ACRouter-project.bin
+   - ota_data_initial.bin
+   - flash_args
+4. Создает flash скрипты для пользователей:
+   - flash.bat (Windows)
+   - flash.sh (Linux/Mac)
+5. Создает FLASH_README.txt с инструкциями
+6. Публикует релиз на GitHub с прикрепленными файлами
+
+ПОСЛЕ ПУБЛИКАЦИИ
+----------------
+
+Пользователи смогут:
+1. Скачать релиз: https://github.com/robotdyn-dimmer/ACRouter/releases
+2. Распаковать архив
+3. Прошить ESP32 одной командой:
+
+   Windows: flash.bat COM5
+   Linux:   ./flash.sh /dev/ttyUSB0
+
+ОБНОВЛЕНИЕ ВЕРСИИ
+-----------------
+
+Перед созданием нового релиза обновите версию в CMakeLists.txt:
+
+    project(ACRouter-project VERSION 1.1.0)
+
+ТРЕБОВАНИЯ
+----------
+
+- GitHub CLI (gh) установлен и авторизован
+- ESP-IDF настроен (idf.py доступен)
+- Проект успешно собирается
+
+ПРОВЕРКА
+--------
+
+Проверить статус GitHub CLI:
+    gh auth status
+
+Проверить существующие релизы:
+    gh release list
+
+Просмотреть релиз:
+    gh release view v1.0.0
+
+УДАЛЕНИЕ РЕЛИЗА
+---------------
+
+Если нужно удалить релиз:
+    gh release delete v1.0.0
+
+================================
