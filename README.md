@@ -281,15 +281,12 @@ We welcome contributions! Here's how you can help:
 - 📝 **Improve docs** — Fix typos, add examples
 - 🔧 **Submit code** — Fork, develop, and create a pull request
 
-Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting.
-
 ---
 
 ## Community
 
-- **GitHub Issues** — Bug reports and feature requests
-- **Discussions** — Questions and community support
-- **Wiki** — Community-contributed configurations
+- **GitHub Issues** — Bug reports and feature requests - (https://github.com/robotdyn-dimmer/ACRouter/issues)
+- **Discussions** — Questions and community support - (https://github.com/robotdyn-dimmer/ACRouter/graphs/community)
 
 ---
 
