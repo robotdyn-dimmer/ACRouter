@@ -313,7 +313,7 @@ ACRouter is open-source software. See [LICENSE](LICENSE) for details.
 </p>
 
 <p align="center">
-  <a href="https://github.com/[your-repo]/ACRouter">⭐ Star this project</a> •
-  <a href="https://github.com/[your-repo]/ACRouter/issues">🐛 Report Issue</a> •
-  <a href="https://github.com/[your-repo]/ACRouter/discussions">💬 Discuss</a>
+  <a href="https://github.com/robotdyn-dimmer/ACRouter">⭐ Star this project</a> •
+  <a href="https://github.com/robotdyn-dimmer/ACRouter/issues">🐛 Report Issue</a> •
+  <a href="https://github.com/robotdyn-dimmer/ACRouter/discussions">💬 Discuss</a>
 </p>
