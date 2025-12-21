@@ -304,6 +304,35 @@ ACRouter is open-source software. See [LICENSE](LICENSE) for details.
 - **Community** — Contributors and testers
 
 ---
+## 1.11 Hardware
+
+### AC Power Router Controller Board
+
+Available at: [rbdimmer.com](https://rbdimmer.com)
+AliExpress: (https://robotdyn.aliexpress.com/store/1950989)
+
+### Individual Modules
+
+**Zero-Cross & Voltage Sensor:**
+- [rbdimmer.com](https://rbdimmer.com)
+- [rbgrid.io](https://rbgrid.io)
+
+**Current Sensors:**
+- ACS712 modules: Amazon, AliExpress, electronics distributors
+- SCT-013 transformers: Amazon, AliExpress, energy monitoring suppliers
+- SCT-013 adapters: [rbdimmer.com](https://rbdimmer.com), DIY build
+
+**AC Dimmer Modules:**
+- [rbdimmer.com](https://rbdimmer.com) (RBDimmer series)
+- AliExpress: (https://robotdyn.aliexpress.com/store/1950989)
+- Compatible modules from other suppliers (verify to true TRIAC dimmer module)
+
+**ESP32 DevKit:**
+- Espressif official partners
+- Amazon, AliExpress
+- Electronics distributors (Mouser, DigiKey, etc.)
+
+---
 
 <p align="center">
   <strong>Made with ⚡ for the solar energy community</strong>
