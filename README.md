@@ -325,7 +325,7 @@ AliExpress: (https://robotdyn.aliexpress.com/store/1950989)
 **AC Dimmer Modules:**
 - [rbdimmer.com](https://rbdimmer.com) (RBDimmer series)
 - AliExpress: (https://robotdyn.aliexpress.com/store/1950989)
-- Compatible modules from other suppliers (verify to true TRIAC dimmer module)
+- Compatible modules from other suppliers or DIY from components (verify to true TRIAC dimmer module)
 
 **ESP32 DevKit:**
 - Espressif official partners
