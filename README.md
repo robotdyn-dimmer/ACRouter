@@ -304,7 +304,7 @@ ACRouter is open-source software. See [LICENSE](LICENSE) for details.
 - **Community** — Contributors and testers
 
 ---
-## 1.11 Hardware
+## Hardware
 
 ### AC Power Router Controller Board
 
