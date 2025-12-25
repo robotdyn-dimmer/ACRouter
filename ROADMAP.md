@@ -6,7 +6,7 @@ All items are subject to change based on community feedback and technical constr
 
 ---
 
-## Phase 1 — Core Solar Router (Current)
+## Phase 1 — Core Solar Router (v1.0.0)
 
 - ✅ Real-time power measurement
 - ✅ Phase-angle AC dimming control
@@ -17,20 +17,21 @@ All items are subject to change based on community feedback and technical constr
 - ✅ Non-volatile configuration storage
 - ✅ Open-source documentation
 
-**Status:** ✅ Active development
+**Status:** ✅ Complete
 
 ---
 
-## Phase 2 — Connectivity & Automation
+## Phase 2 — Connectivity & Automation (v1.1.0 - v1.2.0)
 
-- 📡 MQTT support
-- 🏠 Home Assistant integration
+- ✅ MQTT support (v1.2.0)
+- ✅ Home Assistant Auto-Discovery (v1.2.0)
+- ✅ OTA firmware updates from GitHub (v1.1.0)
+- ✅ Web UI MQTT configuration page (v1.2.0)
 - 🔌 ESPHome-compatible external interface
 - ⏰ Scheduled operation (time-based modes)
 - 🌡️ External temperature input support
-- 📦 OTA firmware updates
 
-**Status:** 🛠 Planned
+**Status:** 🛠 In Progress (70% complete)
 
 ---
 
