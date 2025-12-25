@@ -1,4 +1,4 @@
-# 12. MQTT Integration Guide
+# 11. MQTT Integration Guide
 
 **Version:** 1.2.0
 **Date:** 2025-12-24
