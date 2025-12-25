@@ -58,8 +58,10 @@ enum class CurrentSensorDriver : uint8_t {
     // ACS712 series (Hall effect, DC output with 2.5V bias @ 5V)
     // Values compensated for 3.3V operation via voltage divider
     ACS712_5A   = 10,   ///< ACS712-5A: ±5A, 185 mV/A @ 5V → 122 mV/A @ 3.3V
-    ACS712_20A  = 11,   ///< ACS712-20A: ±20A, 100 mV/A @ 5V → 66 mV/A @ 3.3V
-    ACS712_30A  = 12,   ///< ACS712-30A: ±30A, 66 mV/A @ 5V → 43.56 mV/A @ 3.3V
+    ACS712_10A  = 11,   ///< ACS712-10A: ±10A, ~140 mV/A @ 5V (compatible sensor)
+    ACS712_20A  = 12,   ///< ACS712-20A: ±20A, 100 mV/A @ 5V → 66 mV/A @ 3.3V
+    ACS712_30A  = 13,   ///< ACS712-30A: ±30A, 66 mV/A @ 5V → 43.56 mV/A @ 3.3V
+    ACS712_50A  = 14,   ///< ACS712-50A: ±50A, ~40 mV/A @ 5V (compatible sensor)
 
     // Custom sensor (user-defined parameters)
     CUSTOM      = 255   ///< Custom sensor with manual calibration
@@ -127,6 +129,18 @@ namespace CurrentSensorDefaults {
     constexpr float ACS712_5A_MULTIPLIER      = 1.0f / ACS712_5A_SENSITIVITY_3V3;  // ≈ 8.2 A/V
     constexpr float ACS712_5A_DC_OFFSET_3V3   = 2.5f * VOLTAGE_DIVIDER_RATIO;  // 1.65V
 
+    // ACS712-10A: compatible sensor (not original Allegro)
+    // EMPIRICALLY CALIBRATED with voltage divider circuit:
+    //   OUT → 10K → GPIO → (15K + 1K trim) → GND, 1nF filter
+    // WARNING: Saturation above ~10A (nonlinear response)
+    // Calibration data (2025-01-15), linear range only:
+    //   4.2A→0.194V, 8.35A→0.375V → I = 22.0 × V_rms
+    // Note: 12.1A→0.443V shows saturation (-22% error)
+    constexpr float ACS712_10A_SENSITIVITY_5V  = 0.140f;  // V/A (estimated)
+    constexpr float ACS712_10A_NOMINAL         = 10.0f;   // Amperes
+    constexpr float ACS712_10A_MULTIPLIER      = 22.0f;   // A/V (MEASURED - linear range <10A)
+    constexpr float ACS712_10A_DC_OFFSET_3V3   = 2.5f * VOLTAGE_DIVIDER_RATIO;  // 1.65V
+
     // ACS712-20A: 100 mV/A @ 5V
     constexpr float ACS712_20A_SENSITIVITY_5V  = 0.100f;  // V/A
     constexpr float ACS712_20A_SENSITIVITY_3V3 = ACS712_20A_SENSITIVITY_5V * VOLTAGE_DIVIDER_RATIO;  // 0.066 V/A
@@ -134,12 +148,30 @@ namespace CurrentSensorDefaults {
     constexpr float ACS712_20A_MULTIPLIER      = 1.0f / ACS712_20A_SENSITIVITY_3V3;  // ≈ 15.15 A/V
     constexpr float ACS712_20A_DC_OFFSET_3V3   = 2.5f * VOLTAGE_DIVIDER_RATIO;  // 1.65V
 
-    // ACS712-30A: 66 mV/A @ 5V
-    constexpr float ACS712_30A_SENSITIVITY_5V  = 0.066f;  // V/A
-    constexpr float ACS712_30A_SENSITIVITY_3V3 = ACS712_30A_SENSITIVITY_5V * VOLTAGE_DIVIDER_RATIO;  // 0.04356 V/A
+    // ACS712-30A: 66 mV/A @ 5V (datasheet)
+    // EMPIRICALLY CALIBRATED with voltage divider circuit:
+    //   OUT → 10K → GPIO → (15K + 1K trim) → GND, 1nF filter
+    //   Divider ratio: ~0.66 (trimmed for DC=1.65V at 0A)
+    // Measured linearity: ±2% max error over 4-23A range
+    // Calibration data (2025-01-15):
+    //   4.2A→0.067V, 8.35A→0.127V, 12.1A→0.183V, 15.9A→0.235V,
+    //   19.3A→0.288V, 22.6A→0.342V → Linear regression: I = 65.9 × V_rms
+    constexpr float ACS712_30A_SENSITIVITY_5V  = 0.066f;  // V/A (datasheet reference)
     constexpr float ACS712_30A_NOMINAL         = 30.0f;   // Amperes
-    constexpr float ACS712_30A_MULTIPLIER      = 1.0f / ACS712_30A_SENSITIVITY_3V3;  // ≈ 22.96 A/V
-    constexpr float ACS712_30A_DC_OFFSET_3V3   = 2.5f * VOLTAGE_DIVIDER_RATIO;  // 1.65V
+    constexpr float ACS712_30A_MULTIPLIER      = 65.9f;   // A/V (MEASURED - empirical)
+    constexpr float ACS712_30A_DC_OFFSET_3V3   = 2.5f * VOLTAGE_DIVIDER_RATIO;  // 1.65V (auto-compensated)
+
+    // ACS712-50A: ~40 mV/A @ 5V (compatible sensor)
+    // EMPIRICALLY CALIBRATED with voltage divider circuit:
+    //   OUT → 10K → GPIO → (15K + 1K trim) → GND, 1nF filter
+    // Calibration data (2025-01-15):
+    //   4.2A→0.040V, 8.35A→0.076V, 12.1A→0.110V, 15.9A→0.141V,
+    //   19.3A→0.171V, 22.6A→0.200V, 26.3A→0.229V, 29.23A→0.257V
+    //   Linear regression: I = 111.0 × V_rms
+    constexpr float ACS712_50A_SENSITIVITY_5V  = 0.040f;  // V/A (estimated)
+    constexpr float ACS712_50A_NOMINAL         = 50.0f;   // Amperes
+    constexpr float ACS712_50A_MULTIPLIER      = 111.0f;  // A/V (MEASURED - empirical)
+    constexpr float ACS712_50A_DC_OFFSET_3V3   = 2.5f * VOLTAGE_DIVIDER_RATIO;  // 1.65V
 }
 
 // ============================================================
@@ -217,6 +249,12 @@ inline void getCurrentSensorDefaults(CurrentSensorDriver driver,
             offset = ACS712_5A_DC_OFFSET_3V3;
             break;
 
+        case CurrentSensorDriver::ACS712_10A:
+            nominal_current = ACS712_10A_NOMINAL;
+            multiplier = ACS712_10A_MULTIPLIER;
+            offset = ACS712_10A_DC_OFFSET_3V3;
+            break;
+
         case CurrentSensorDriver::ACS712_20A:
             nominal_current = ACS712_20A_NOMINAL;
             multiplier = ACS712_20A_MULTIPLIER;
@@ -227,6 +265,12 @@ inline void getCurrentSensorDefaults(CurrentSensorDriver driver,
             nominal_current = ACS712_30A_NOMINAL;
             multiplier = ACS712_30A_MULTIPLIER;
             offset = ACS712_30A_DC_OFFSET_3V3;
+            break;
+
+        case CurrentSensorDriver::ACS712_50A:
+            nominal_current = ACS712_50A_NOMINAL;
+            multiplier = ACS712_50A_MULTIPLIER;
+            offset = ACS712_50A_DC_OFFSET_3V3;
             break;
 
         // Custom sensor (no defaults)
@@ -297,12 +341,20 @@ inline bool parseCurrentSensorType(const char* type_str, CurrentSensorDriver& dr
         driver = CurrentSensorDriver::ACS712_5A;
         return true;
     }
+    if (type == "ACS712-10A" || type == "ACS712_10A") {
+        driver = CurrentSensorDriver::ACS712_10A;
+        return true;
+    }
     if (type == "ACS712-20A" || type == "ACS712_20A") {
         driver = CurrentSensorDriver::ACS712_20A;
         return true;
     }
     if (type == "ACS712-30A" || type == "ACS712_30A") {
         driver = CurrentSensorDriver::ACS712_30A;
+        return true;
+    }
+    if (type == "ACS712-50A" || type == "ACS712_50A") {
+        driver = CurrentSensorDriver::ACS712_50A;
         return true;
     }
 
@@ -332,8 +384,10 @@ inline const char* getCurrentSensorDriverName(CurrentSensorDriver driver) {
         case CurrentSensorDriver::SCT013_80A:   return "SCT013-80A";
         case CurrentSensorDriver::SCT013_100A:  return "SCT013-100A";
         case CurrentSensorDriver::ACS712_5A:    return "ACS712-5A";
+        case CurrentSensorDriver::ACS712_10A:   return "ACS712-10A";
         case CurrentSensorDriver::ACS712_20A:   return "ACS712-20A";
         case CurrentSensorDriver::ACS712_30A:   return "ACS712-30A";
+        case CurrentSensorDriver::ACS712_50A:   return "ACS712-50A";
         case CurrentSensorDriver::CUSTOM:       return "CUSTOM";
         default:                                return "UNKNOWN";
     }
@@ -347,8 +401,10 @@ inline const char* getCurrentSensorDriverName(CurrentSensorDriver driver) {
  */
 inline bool isACS712Sensor(CurrentSensorDriver driver) {
     return (driver == CurrentSensorDriver::ACS712_5A ||
+            driver == CurrentSensorDriver::ACS712_10A ||
             driver == CurrentSensorDriver::ACS712_20A ||
-            driver == CurrentSensorDriver::ACS712_30A);
+            driver == CurrentSensorDriver::ACS712_30A ||
+            driver == CurrentSensorDriver::ACS712_50A);
 }
 
 /**

@@ -58,6 +58,7 @@ private:
     void handleDashboard();          // Main dashboard page
     void handleWiFiPage();           // WiFi configuration page
     void handleHardwareConfigPage(); // Hardware configuration page
+    void handleOTAPage();            // OTA firmware update page
 
     // WiFi API Handlers
     void handleWiFiStatus();         // GET /api/wifi/status
@@ -70,9 +71,22 @@ private:
     void handleGetHardwareConfig();  // GET /api/hardware/config
     void handleSetHardwareConfig();  // POST /api/hardware/config
     void handleValidateHardwareConfig(); // POST /api/hardware/validate
+    void handleGetSensorProfiles();  // GET /api/hardware/sensor-profiles
 
     // System Control API Handlers
     void handleSystemReboot();       // POST /api/system/reboot
+
+    // OTA API Handlers
+    void handleOTACheckGitHub();     // GET /api/ota/check-github
+    void handleOTAUpdateGitHub();    // POST /api/ota/update-github
+
+    // MQTT API Handlers
+    void handleMQTTPage();           // GET /mqtt
+    void handleGetMQTTStatus();      // GET /api/mqtt/status
+    void handleGetMQTTConfig();      // GET /api/mqtt/config
+    void handleSetMQTTConfig();      // POST /api/mqtt/config
+    void handleMQTTReconnect();      // POST /api/mqtt/reconnect
+    void handleMQTTPublish();        // POST /api/mqtt/publish
 
     // Utility
     void sendJsonResponse(int code, const String& json);

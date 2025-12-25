@@ -238,7 +238,8 @@ After flashing, the device creates a WiFi network:
 | [⚙️ Compilation Guide](docs/02_COMPILATION.md) | Build instructions and troubleshooting |
 | [📐 Architecture](docs/03_STRUCTURE.md) | Software modules and API |
 | [🎮 Operating Modes](docs/04_ROUTER_MODES.md) | Detailed mode descriptions |
-| [🔗 MQTT Guide](docs/11_MQTT_GUIDE.md) | MQTT integration and topics |
+| [🔗 MQTT Guide](docs/12_MQTT_GUIDE.md) | MQTT integration and topics |
+| [🏠 Home Assistant](docs/13_HOME_ASSISTANT.md) | Home Assistant integration |
 | [🗺️ Roadmap](ROADMAP.md) | Development plans |
 
 ---

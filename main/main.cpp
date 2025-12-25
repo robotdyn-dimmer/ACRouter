@@ -8,6 +8,7 @@
 
 #include "Arduino.h"
 #include "esp_log.h"
+#include "esp_app_desc.h"
 #include "nvs_flash.h"
 #include "PowerMeterADC.h"
 #include "DimmerHAL.h"
@@ -18,9 +19,12 @@
 #include "WiFiManager.h"
 #include "WebServerManager.h"
 #include "NTPManager.h"
+#include "GitHubOTAChecker.h"
+#include "MQTTManager.h"
 #include "PinDefinitions.h"
 #include "SensorTypes.h"
 #include "VoltageSensorDrivers.h"
+#include "CurrentSensorDrivers.h"
 
 static const char* TAG = "MAIN";
 
@@ -177,6 +181,31 @@ extern "C" void app_main()
                  webserver.getHttpPort(), webserver.getWsPort());
     }
 
+    // ================================================================
+    // Initialize GitHub OTA Checker
+    // ================================================================
+    // Configure GitHub repository for OTA updates
+    // Repository: https://github.com/robotdyn-dimmer/ACRouter
+    #define GITHUB_OWNER "robotdyn-dimmer"
+    #define GITHUB_REPO "ACRouter"
+
+    // Get version from app description (set in CMakeLists.txt)
+    const esp_app_desc_t* app_desc = esp_app_get_description();
+
+    ESP_LOGI(TAG, "Initializing GitHub OTA Checker...");
+    GitHubOTAChecker& otaChecker = GitHubOTAChecker::getInstance();
+    otaChecker.begin(GITHUB_OWNER, GITHUB_REPO, app_desc->version);
+    ESP_LOGI(TAG, "GitHub OTA Checker initialized (version: %s)", app_desc->version);
+
+    // ================================================================
+    // Initialize MQTT Manager
+    // ================================================================
+    // Note: MQTTManager requires RouterController and PowerMeterADC
+    // These will be passed after their initialization
+    ESP_LOGI(TAG, "Initializing MQTT Manager...");
+    MQTTManager& mqtt = MQTTManager::getInstance();
+    // Full initialization will happen after RouterController is ready
+
     // Get ADC configuration from HardwareConfigManager
     // This loads from NVS or uses factory defaults on first boot
     const HardwareConfig& hwCfg = hwConfig.getConfig();
@@ -196,6 +225,31 @@ extern "C" void app_main()
         }
     }
     ESP_LOGI(TAG, "DimmerHAL initialized, frequency=%d Hz", dimmer.getMainsFrequency());
+
+    // ================================================================
+    // Apply sensor driver multipliers from profiles
+    // ================================================================
+    // For current sensors, apply multiplier from driver profile
+    // This ensures calibrated values from CurrentSensorDrivers.h are used
+    HardwareConfig& hwCfgMutable = hwConfig.config();
+    for (int ch = 0; ch < 4; ch++) {
+        ADCChannelConfig& sensor = hwCfgMutable.adc_channels[ch];
+        if (!sensor.enabled) continue;
+
+        // Apply current sensor driver multiplier from profile
+        if (isCurrentSensor(sensor.type)) {
+            float nominal, driver_multiplier, offset;
+            getCurrentSensorDefaults(sensor.current_driver, nominal, driver_multiplier, offset);
+
+            // Only apply if driver has a valid multiplier (not CUSTOM with 0)
+            if (driver_multiplier > 0.0f) {
+                ESP_LOGI(TAG, "[CH%d] Applying %s driver: multiplier %.2f -> %.2f",
+                         ch, getCurrentSensorDriverName(sensor.current_driver),
+                         sensor.multiplier, driver_multiplier);
+                sensor.multiplier = driver_multiplier;
+            }
+        }
+    }
 
     // ================================================================
     // Initialize PowerMeterADC (skip in safe mode)
@@ -412,6 +466,13 @@ extern "C" void app_main()
     SerialCommand& serialCmd = SerialCommand::getInstance();
     serialCmd.begin(&config, &router);
 
+    // ================================================================
+    // Complete MQTT Manager Initialization
+    // ================================================================
+    // Now that RouterController and PowerMeterADC are ready, pass references
+    mqtt.begin(&router, powerMeter_initialized ? &powerMeter : nullptr, &config);
+    ESP_LOGI(TAG, "MQTT Manager initialized (enabled=%s)", mqtt.isEnabled() ? "YES" : "NO");
+
     ESP_LOGI(TAG, "========================================");
     ESP_LOGI(TAG, "System initialization complete");
     if (powerMeter_initialized) {
@@ -452,6 +513,9 @@ extern "C" void app_main()
         if (ntp_initialized) {
             ntp.handle();
         }
+
+        // Handle MQTT events and publishing
+        mqtt.loop();
 
         // Display statistics every 10 min
         static uint32_t last_stats = 0;

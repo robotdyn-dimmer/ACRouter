@@ -185,6 +185,73 @@ input:checked + .slider:before {
     border-radius: var(--radius-sm);
     margin-top: var(--spacing-md);
 }
+
+/* Sensor Profile Info Box */
+.profile-info {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-left: 4px solid var(--success-main);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.profile-info-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.profile-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-badge.calibrated {
+    background-color: var(--success-main);
+    color: white;
+}
+
+.profile-badge.uncalibrated {
+    background-color: var(--warning-main);
+    color: white;
+}
+
+.profile-name {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.profile-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.profile-detail {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+}
+
+.profile-detail .label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.profile-detail .value {
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+}
 </style>
 )rawliteral";
 
@@ -234,7 +301,7 @@ const char HARDWARE_CONFIG_CONTENT[] PROGMEM = R"rawliteral(
 
                 <div class="form-group">
                     <label class="form-label">Sensor Type</label>
-                    <select class="form-control" id="adc0-type">
+                    <select class="form-control" id="adc0-type" onchange="populateSensorProfiles(0)">
                         <option value="0">NONE</option>
                         <option value="1" selected>VOLTAGE_AC</option>
                         <option value="2">CURRENT_LOAD</option>
@@ -244,15 +311,37 @@ const char HARDWARE_CONFIG_CONTENT[] PROGMEM = R"rawliteral(
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Multiplier</label>
-                    <input type="number" class="form-control" id="adc0-mult" value="230.0" step="0.1">
-                    <div class="form-helper">Calibration coefficient</div>
+                    <label class="form-label">Sensor Profile</label>
+                    <select class="form-control" id="adc0-driver" onchange="applySensorProfile(0, this.value)">
+                        <option value="">-- Select Sensor --</option>
+                    </select>
+                    <div class="form-helper">Choose from pre-configured sensor profiles</div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Offset</label>
-                    <input type="number" class="form-control" id="adc0-offset" value="0.0" step="0.01">
-                    <div class="form-helper">Calibration offset</div>
+                <!-- Profile Info Display (shown after selection) -->
+                <div id="adc0-profile-info" class="profile-info" style="display:none;">
+                    <div class="profile-info-header">
+                        <span class="profile-badge" id="adc0-profile-badge">✓ Calibrated</span>
+                        <span class="profile-name" id="adc0-profile-name"></span>
+                    </div>
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <span class="label">Multiplier:</span>
+                            <span class="value" id="adc0-profile-mult">--</span> A/V
+                        </div>
+                        <div class="profile-detail">
+                            <span class="label">Offset:</span>
+                            <span class="value" id="adc0-profile-offset">--</span> V
+                        </div>
+                        <div class="profile-detail">
+                            <span class="label">Nominal:</span>
+                            <span class="value" id="adc0-profile-nominal">--</span> A
+                        </div>
+                        <div class="profile-detail" id="adc0-profile-calib-date" style="display:none;">
+                            <span class="label">Calibrated:</span>
+                            <span class="value"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -285,7 +374,7 @@ const char HARDWARE_CONFIG_CONTENT[] PROGMEM = R"rawliteral(
 
                 <div class="form-group">
                     <label class="form-label">Sensor Type</label>
-                    <select class="form-control" id="adc1-type">
+                    <select class="form-control" id="adc1-type" onchange="populateSensorProfiles(1)">
                         <option value="0">NONE</option>
                         <option value="1">VOLTAGE_AC</option>
                         <option value="2" selected>CURRENT_LOAD</option>
@@ -295,13 +384,37 @@ const char HARDWARE_CONFIG_CONTENT[] PROGMEM = R"rawliteral(
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Multiplier</label>
-                    <input type="number" class="form-control" id="adc1-mult" value="30.0" step="0.1">
+                    <label class="form-label">Sensor Profile</label>
+                    <select class="form-control" id="adc1-driver" onchange="applySensorProfile(1, this.value)">
+                        <option value="">-- Select Sensor --</option>
+                    </select>
+                    <div class="form-helper">Choose from pre-configured sensor profiles</div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Offset</label>
-                    <input type="number" class="form-control" id="adc1-offset" value="0.0" step="0.01">
+                <!-- Profile Info Display -->
+                <div id="adc1-profile-info" class="profile-info" style="display:none;">
+                    <div class="profile-info-header">
+                        <span class="profile-badge" id="adc1-profile-badge">✓ Calibrated</span>
+                        <span class="profile-name" id="adc1-profile-name"></span>
+                    </div>
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <span class="label">Multiplier:</span>
+                            <span class="value" id="adc1-profile-mult">--</span> A/V
+                        </div>
+                        <div class="profile-detail">
+                            <span class="label">Offset:</span>
+                            <span class="value" id="adc1-profile-offset">--</span> V
+                        </div>
+                        <div class="profile-detail">
+                            <span class="label">Nominal:</span>
+                            <span class="value" id="adc1-profile-nominal">--</span> A
+                        </div>
+                        <div class="profile-detail" id="adc1-profile-calib-date" style="display:none;">
+                            <span class="label">Calibrated:</span>
+                            <span class="value"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -334,7 +447,7 @@ const char HARDWARE_CONFIG_CONTENT[] PROGMEM = R"rawliteral(
 
                 <div class="form-group">
                     <label class="form-label">Sensor Type</label>
-                    <select class="form-control" id="adc2-type">
+                    <select class="form-control" id="adc2-type" onchange="populateSensorProfiles(2)">
                         <option value="0">NONE</option>
                         <option value="1">VOLTAGE_AC</option>
                         <option value="2">CURRENT_LOAD</option>
@@ -344,13 +457,37 @@ const char HARDWARE_CONFIG_CONTENT[] PROGMEM = R"rawliteral(
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Multiplier</label>
-                    <input type="number" class="form-control" id="adc2-mult" value="30.0" step="0.1">
+                    <label class="form-label">Sensor Profile</label>
+                    <select class="form-control" id="adc2-driver" onchange="applySensorProfile(2, this.value)">
+                        <option value="">-- Select Sensor --</option>
+                    </select>
+                    <div class="form-helper">Choose from pre-configured sensor profiles</div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Offset</label>
-                    <input type="number" class="form-control" id="adc2-offset" value="0.0" step="0.01">
+                <!-- Profile Info Display -->
+                <div id="adc2-profile-info" class="profile-info" style="display:none;">
+                    <div class="profile-info-header">
+                        <span class="profile-badge" id="adc2-profile-badge">✓ Calibrated</span>
+                        <span class="profile-name" id="adc2-profile-name"></span>
+                    </div>
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <span class="label">Multiplier:</span>
+                            <span class="value" id="adc2-profile-mult">--</span> A/V
+                        </div>
+                        <div class="profile-detail">
+                            <span class="label">Offset:</span>
+                            <span class="value" id="adc2-profile-offset">--</span> V
+                        </div>
+                        <div class="profile-detail">
+                            <span class="label">Nominal:</span>
+                            <span class="value" id="adc2-profile-nominal">--</span> A
+                        </div>
+                        <div class="profile-detail" id="adc2-profile-calib-date" style="display:none;">
+                            <span class="label">Calibrated:</span>
+                            <span class="value"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -383,7 +520,7 @@ const char HARDWARE_CONFIG_CONTENT[] PROGMEM = R"rawliteral(
 
                 <div class="form-group">
                     <label class="form-label">Sensor Type</label>
-                    <select class="form-control" id="adc3-type">
+                    <select class="form-control" id="adc3-type" onchange="populateSensorProfiles(3)">
                         <option value="0">NONE</option>
                         <option value="1">VOLTAGE_AC</option>
                         <option value="2">CURRENT_LOAD</option>
@@ -393,13 +530,37 @@ const char HARDWARE_CONFIG_CONTENT[] PROGMEM = R"rawliteral(
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Multiplier</label>
-                    <input type="number" class="form-control" id="adc3-mult" value="30.0" step="0.1">
+                    <label class="form-label">Sensor Profile</label>
+                    <select class="form-control" id="adc3-driver" onchange="applySensorProfile(3, this.value)">
+                        <option value="">-- Select Sensor --</option>
+                    </select>
+                    <div class="form-helper">Choose from pre-configured sensor profiles</div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Offset</label>
-                    <input type="number" class="form-control" id="adc3-offset" value="0.0" step="0.01">
+                <!-- Profile Info Display -->
+                <div id="adc3-profile-info" class="profile-info" style="display:none;">
+                    <div class="profile-info-header">
+                        <span class="profile-badge" id="adc3-profile-badge">✓ Calibrated</span>
+                        <span class="profile-name" id="adc3-profile-name"></span>
+                    </div>
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <span class="label">Multiplier:</span>
+                            <span class="value" id="adc3-profile-mult">--</span> A/V
+                        </div>
+                        <div class="profile-detail">
+                            <span class="label">Offset:</span>
+                            <span class="value" id="adc3-profile-offset">--</span> V
+                        </div>
+                        <div class="profile-detail">
+                            <span class="label">Nominal:</span>
+                            <span class="value" id="adc3-profile-nominal">--</span> A
+                        </div>
+                        <div class="profile-detail" id="adc3-profile-calib-date" style="display:none;">
+                            <span class="label">Calibrated:</span>
+                            <span class="value"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -587,6 +748,150 @@ const char HARDWARE_CONFIG_CONTENT[] PROGMEM = R"rawliteral(
 </div>
 
 <script>
+// ============================================================
+// Sensor Profile Definitions (matching CurrentSensorDrivers.h)
+// ============================================================
+// Sensor profiles - loaded from backend API at runtime
+let SENSOR_PROFILES = {};
+
+// Load sensor profiles from backend
+async function loadSensorProfiles() {
+    try {
+        const response = await fetch('/api/hardware/sensor-profiles');
+        if (response.ok) {
+            const data = await response.json();
+            // Convert array to object keyed by ID
+            SENSOR_PROFILES = {};
+            data.profiles.forEach(profile => {
+                SENSOR_PROFILES[profile.id] = profile;
+            });
+            console.log('Loaded', data.profiles.length, 'sensor profiles from backend');
+            return true;
+        }
+    } catch (e) {
+        console.error('Failed to load sensor profiles:', e);
+    }
+    return false;
+}
+
+// ============================================================
+// Populate Sensor Profile Dropdown based on Sensor Type
+// ============================================================
+function populateSensorProfiles(channel) {
+    const sensorType = document.getElementById(`adc${channel}-type`).value;
+    const driverSelect = document.getElementById(`adc${channel}-driver`);
+
+    // Clear existing options
+    driverSelect.innerHTML = '<option value="">-- Select Sensor --</option>';
+
+    // Determine which profiles to show
+    let filterType = '';
+    switch(sensorType) {
+        case '1': // VOLTAGE_AC
+            filterType = 'VOLTAGE_AC';
+            break;
+        case '2': // CURRENT_LOAD
+        case '3': // CURRENT_GRID
+        case '4': // CURRENT_SOLAR
+            filterType = 'CURRENT';
+            break;
+        default:
+            return; // NONE - no profiles needed
+    }
+
+    // Add optgroups based on filter
+    if (filterType === 'VOLTAGE_AC') {
+        const voltageGroup = document.createElement('optgroup');
+        voltageGroup.label = '⚡ AC Voltage Sensors';
+
+        for (const [id, profile] of Object.entries(SENSOR_PROFILES)) {
+            if (profile.sensorType === 'VOLTAGE_AC') {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = profile.name + (profile.calibrated ? ' ✓' : '');
+                voltageGroup.appendChild(option);
+            }
+        }
+        driverSelect.appendChild(voltageGroup);
+    } else if (filterType === 'CURRENT') {
+        // SCT-013 group
+        const sctGroup = document.createElement('optgroup');
+        sctGroup.label = '🔄 SCT-013 Series (AC Current Transformers)';
+
+        for (const [id, profile] of Object.entries(SENSOR_PROFILES)) {
+            if (profile.category === 'sct013') {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = profile.name + (id === 'SCT013_30A' ? ' ⭐' : '');
+                sctGroup.appendChild(option);
+            }
+        }
+        driverSelect.appendChild(sctGroup);
+
+        // ACS712 group
+        const acsGroup = document.createElement('optgroup');
+        acsGroup.label = '📊 ACS712 Series (Hall-Effect)';
+
+        for (const [id, profile] of Object.entries(SENSOR_PROFILES)) {
+            if (profile.category === 'acs712') {
+                const option = document.createElement('option');
+                option.value = id;
+                const calibText = profile.calibrated ? ' ✓ Calibrated' : ' ⚠️ Not calibrated';
+                option.textContent = profile.name + calibText;
+                acsGroup.appendChild(option);
+            }
+        }
+        driverSelect.appendChild(acsGroup);
+    }
+}
+
+// ============================================================
+// Apply Sensor Profile
+// ============================================================
+function applySensorProfile(channel, profileId) {
+    const profile = SENSOR_PROFILES[profileId];
+    const infoBox = document.getElementById(`adc${channel}-profile-info`);
+
+    if (!profile) {
+        // No profile selected - hide info box
+        infoBox.style.display = 'none';
+        return;
+    }
+
+    // Show and populate profile info box
+    infoBox.style.display = 'block';
+
+    // Update badge
+    const badge = document.getElementById(`adc${channel}-profile-badge`);
+    badge.className = 'profile-badge ' + (profile.calibrated ? 'calibrated' : 'uncalibrated');
+    badge.textContent = profile.calibrated ? '✓ Calibrated' : '⚠️ Not Calibrated';
+
+    // Update profile name
+    document.getElementById(`adc${channel}-profile-name`).textContent = profile.name;
+
+    // Update values
+    document.getElementById(`adc${channel}-profile-mult`).textContent = profile.multiplier.toFixed(1);
+    document.getElementById(`adc${channel}-profile-offset`).textContent = profile.offset.toFixed(2);
+    document.getElementById(`adc${channel}-profile-nominal`).textContent = profile.nominal.toFixed(0);
+
+    // Show calibration date if available
+    const calibDateEl = document.getElementById(`adc${channel}-profile-calib-date`);
+    if (profile.calibration_date) {
+        calibDateEl.style.display = 'flex';
+        calibDateEl.querySelector('.value').textContent = profile.calibration_date;
+    } else {
+        calibDateEl.style.display = 'none';
+    }
+
+    // Store profile data for save operation
+    window.adcChannelProfiles = window.adcChannelProfiles || {};
+    window.adcChannelProfiles[channel] = {
+        driver: profileId,
+        multiplier: profile.multiplier,
+        offset: profile.offset
+    };
+}
+
 // ============================================================
 // ADC Channel Toggle
 // ============================================================
@@ -795,7 +1100,16 @@ async function saveAndReboot() {
 // ============================================================
 // Page Initialization
 // ============================================================
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+    // First, load sensor profiles from backend
+    await loadSensorProfiles();
+
+    // Populate sensor profile dropdowns for all channels
+    for (let i = 0; i < 4; i++) {
+        populateSensorProfiles(i);
+    }
+
+    // Load hardware configuration
     loadHardwareConfig();
 });
 </script>
