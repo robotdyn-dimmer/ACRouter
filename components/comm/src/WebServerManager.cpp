@@ -3,6 +3,9 @@
 #include "ConfigManager.h"
 #include "HardwareConfigManager.h"
 #include "OTAManager.h"
+#include "GitHubOTAChecker.h"
+#include "MQTTManager.h"
+#include <esp_app_desc.h>
 
 // New Material UI Web Interface
 #include "../web/styles/MaterialStyles.h"
@@ -10,6 +13,8 @@
 #include "../web/pages/DashboardPage.h"
 #include "../web/pages/WiFiConfigPage.h"
 #include "../web/pages/HardwareConfigPage.h"
+#include "../web/pages/OTAPage.h"
+#include "../web/pages/MQTTPage.h"
 
 static const char* TAG = "WebServer";
 
@@ -101,6 +106,9 @@ void WebServerManager::setupRoutes() {
     // Hardware configuration
     _http_server->on("/settings/hardware", HTTP_GET, [this]() { handleHardwareConfigPage(); });
 
+    // OTA page
+    _http_server->on("/ota", HTTP_GET, [this]() { handleOTAPage(); });
+
     // Static resources
     _http_server->on("/styles.css", HTTP_GET, [this]() {
         _http_server->send_P(200, "text/css", MATERIAL_CSS);
@@ -148,12 +156,31 @@ void WebServerManager::setupRoutes() {
     _http_server->on("/api/hardware/config", HTTP_GET, [this]() { handleGetHardwareConfig(); });
     _http_server->on("/api/hardware/config", HTTP_POST, [this]() { handleSetHardwareConfig(); });
     _http_server->on("/api/hardware/validate", HTTP_POST, [this]() { handleValidateHardwareConfig(); });
+    _http_server->on("/api/hardware/sensor-profiles", HTTP_GET, [this]() { handleGetSensorProfiles(); });
 
     // ========================================
     // REST API - System Control
     // ========================================
 
     _http_server->on("/api/system/reboot", HTTP_POST, [this]() { handleSystemReboot(); });
+
+    // ========================================
+    // REST API - OTA Management
+    // ========================================
+
+    _http_server->on("/api/ota/check-github", HTTP_GET, [this]() { handleOTACheckGitHub(); });
+    _http_server->on("/api/ota/update-github", HTTP_POST, [this]() { handleOTAUpdateGitHub(); });
+
+    // ========================================
+    // MQTT Configuration Page & API
+    // ========================================
+
+    _http_server->on("/mqtt", HTTP_GET, [this]() { handleMQTTPage(); });
+    _http_server->on("/api/mqtt/status", HTTP_GET, [this]() { handleGetMQTTStatus(); });
+    _http_server->on("/api/mqtt/config", HTTP_GET, [this]() { handleGetMQTTConfig(); });
+    _http_server->on("/api/mqtt/config", HTTP_POST, [this]() { handleSetMQTTConfig(); });
+    _http_server->on("/api/mqtt/reconnect", HTTP_POST, [this]() { handleMQTTReconnect(); });
+    _http_server->on("/api/mqtt/publish", HTTP_POST, [this]() { handleMQTTPublish(); });
 
     // ========================================
     // Server Configuration
@@ -192,7 +219,10 @@ void WebServerManager::handleGetInfo() {
 
     uint32_t uptime_sec = millis() / 1000;
 
-    doc["version"] = "1.0.0";
+    // Get version from app description (set in CMakeLists.txt)
+    const esp_app_desc_t* app_desc = esp_app_get_description();
+    doc["version"] = app_desc->version;
+
     doc["chip"] = "ESP32";
     doc["flash_size"] = ESP.getFlashChipSize();
     doc["free_heap"] = ESP.getFreeHeap();
@@ -671,6 +701,11 @@ void WebServerManager::handleHardwareConfigPage() {
     _http_server->send(200, "text/html", html);
 }
 
+void WebServerManager::handleOTAPage() {
+    String html = getOTAPage();
+    _http_server->send(200, "text/html", html);
+}
+
 // ============================================================================
 // Hardware Configuration API Handlers
 // ============================================================================
@@ -858,6 +893,248 @@ void WebServerManager::handleValidateHardwareConfig() {
     sendJsonResponse(200, json);
 }
 
+void WebServerManager::handleGetSensorProfiles() {
+    JsonDocument doc;
+    JsonArray profiles = doc["profiles"].to<JsonArray>();
+
+    // ========================================
+    // Voltage Sensor Profiles
+    // ========================================
+
+    // ZMPT107
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "ZMPT107_ADC";
+        p["name"] = "ZMPT107";
+        p["sensorType"] = "VOLTAGE_AC";
+        p["category"] = "voltage";
+        p["calibrated"] = true;
+        p["multiplier"] = VoltageSensorDefaults::ZMPT107_DEFAULT_MULT_230V;
+        p["offset"] = VoltageSensorDefaults::ZMPT107_OFFSET;
+        p["nominal"] = 250.0f;
+        p["notes"] = "AC Voltage transformer, 0.70V RMS @ 230V";
+    }
+
+    // ZMPT101B
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "ZMPT101B_ADC";
+        p["name"] = "ZMPT101B";
+        p["sensorType"] = "VOLTAGE_AC";
+        p["category"] = "voltage";
+        p["calibrated"] = true;
+        p["multiplier"] = VoltageSensorDefaults::ZMPT101B_DEFAULT_MULT_230V;
+        p["offset"] = VoltageSensorDefaults::ZMPT101B_OFFSET;
+        p["nominal"] = 250.0f;
+        p["notes"] = "AC Voltage transformer, 1.0V RMS @ 230V";
+    }
+
+    // Custom Voltage
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "CUSTOM_VOLTAGE";
+        p["name"] = "Custom Voltage Sensor";
+        p["sensorType"] = "VOLTAGE_AC";
+        p["category"] = "voltage";
+        p["calibrated"] = false;
+        p["multiplier"] = 230.0f;
+        p["offset"] = 0.0f;
+        p["nominal"] = 250.0f;
+        p["notes"] = "Custom voltage divider - needs calibration";
+    }
+
+    // ========================================
+    // SCT-013 Current Sensor Profiles
+    // ========================================
+
+    // SCT013-5A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "SCT013_5A";
+        p["name"] = "SCT-013-5A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "sct013";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::SCT013_5A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::SCT013_5A_OFFSET;
+        p["nominal"] = CurrentSensorDefaults::SCT013_5A_NOMINAL;
+    }
+
+    // SCT013-10A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "SCT013_10A";
+        p["name"] = "SCT-013-10A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "sct013";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::SCT013_10A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::SCT013_10A_OFFSET;
+        p["nominal"] = CurrentSensorDefaults::SCT013_10A_NOMINAL;
+    }
+
+    // SCT013-20A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "SCT013_20A";
+        p["name"] = "SCT-013-20A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "sct013";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::SCT013_20A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::SCT013_20A_OFFSET;
+        p["nominal"] = CurrentSensorDefaults::SCT013_20A_NOMINAL;
+    }
+
+    // SCT013-30A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "SCT013_30A";
+        p["name"] = "SCT-013-30A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "sct013";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::SCT013_30A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::SCT013_30A_OFFSET;
+        p["nominal"] = CurrentSensorDefaults::SCT013_30A_NOMINAL;
+    }
+
+    // SCT013-50A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "SCT013_50A";
+        p["name"] = "SCT-013-50A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "sct013";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::SCT013_50A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::SCT013_50A_OFFSET;
+        p["nominal"] = CurrentSensorDefaults::SCT013_50A_NOMINAL;
+    }
+
+    // SCT013-60A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "SCT013_60A";
+        p["name"] = "SCT-013-60A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "sct013";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::SCT013_60A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::SCT013_60A_OFFSET;
+        p["nominal"] = CurrentSensorDefaults::SCT013_60A_NOMINAL;
+    }
+
+    // SCT013-80A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "SCT013_80A";
+        p["name"] = "SCT-013-80A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "sct013";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::SCT013_80A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::SCT013_80A_OFFSET;
+        p["nominal"] = CurrentSensorDefaults::SCT013_80A_NOMINAL;
+    }
+
+    // SCT013-100A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "SCT013_100A";
+        p["name"] = "SCT-013-100A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "sct013";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::SCT013_100A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::SCT013_100A_OFFSET;
+        p["nominal"] = CurrentSensorDefaults::SCT013_100A_NOMINAL;
+    }
+
+    // ========================================
+    // ACS712 Current Sensor Profiles
+    // ========================================
+
+    // ACS712-5A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "ACS712_5A";
+        p["name"] = "ACS712-5A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "acs712";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::ACS712_5A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::ACS712_5A_DC_OFFSET_3V3;
+        p["nominal"] = CurrentSensorDefaults::ACS712_5A_NOMINAL;
+        p["notes"] = "Theoretical values - not empirically calibrated";
+    }
+
+    // ACS712-10A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "ACS712_10A";
+        p["name"] = "ACS712-10A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "acs712";
+        p["calibrated"] = true;
+        p["multiplier"] = CurrentSensorDefaults::ACS712_10A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::ACS712_10A_DC_OFFSET_3V3;
+        p["nominal"] = CurrentSensorDefaults::ACS712_10A_NOMINAL;
+        p["calibration_date"] = "2025-01-15";
+        p["accuracy"] = "±2%";
+        p["notes"] = "Saturates above 10A - linear range only";
+    }
+
+    // ACS712-20A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "ACS712_20A";
+        p["name"] = "ACS712-20A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "acs712";
+        p["calibrated"] = false;
+        p["multiplier"] = CurrentSensorDefaults::ACS712_20A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::ACS712_20A_DC_OFFSET_3V3;
+        p["nominal"] = CurrentSensorDefaults::ACS712_20A_NOMINAL;
+        p["notes"] = "Theoretical values - not empirically calibrated";
+    }
+
+    // ACS712-30A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "ACS712_30A";
+        p["name"] = "ACS712-30A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "acs712";
+        p["calibrated"] = true;
+        p["multiplier"] = CurrentSensorDefaults::ACS712_30A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::ACS712_30A_DC_OFFSET_3V3;
+        p["nominal"] = CurrentSensorDefaults::ACS712_30A_NOMINAL;
+        p["calibration_date"] = "2025-01-15";
+        p["accuracy"] = "±2%";
+        p["notes"] = "Calibrated with voltage divider circuit";
+    }
+
+    // ACS712-50A
+    {
+        JsonObject p = profiles.add<JsonObject>();
+        p["id"] = "ACS712_50A";
+        p["name"] = "ACS712-50A";
+        p["sensorType"] = "CURRENT";
+        p["category"] = "acs712";
+        p["calibrated"] = true;
+        p["multiplier"] = CurrentSensorDefaults::ACS712_50A_MULTIPLIER;
+        p["offset"] = CurrentSensorDefaults::ACS712_50A_DC_OFFSET_3V3;
+        p["nominal"] = CurrentSensorDefaults::ACS712_50A_NOMINAL;
+        p["calibration_date"] = "2025-12-22";
+        p["notes"] = "Calibrated 4-29A range";
+    }
+
+    String json;
+    serializeJson(doc, json);
+    sendJsonResponse(200, json);
+}
+
 // ============================================================================
 // System Control API Handlers
 // ============================================================================
@@ -942,4 +1219,277 @@ String WebServerManager::buildHardwareConfigJson() {
     serializeJson(doc, json);
 
     return json;
+}
+
+// ============================================================================
+// OTA API Handlers
+// ============================================================================
+
+void WebServerManager::handleOTACheckGitHub() {
+    ESP_LOGI(TAG, "API: OTA check GitHub");
+
+    GitHubOTAChecker& checker = GitHubOTAChecker::getInstance();
+    GitHubRelease release;
+
+    // Check for updates (returns update availability, not success status)
+    bool hasUpdate = checker.checkForUpdate(release);
+
+    JsonDocument doc;
+
+    // Determine if the check was successful by validating release data
+    bool checkSuccessful = !release.tag_name.isEmpty();
+
+    if (checkSuccessful) {
+        doc["success"] = true;
+        doc["update_available"] = hasUpdate;
+        doc["current_version"] = checker.getCurrentVersion();
+
+        if (hasUpdate) {
+            // New version available
+            doc["latest_version"] = release.tag_name;
+            doc["release_name"] = release.name;
+            doc["changelog"] = release.body;
+            doc["published_at"] = release.published_at;
+            doc["asset_name"] = release.asset_name;
+            doc["asset_url"] = release.asset_url;
+            doc["asset_size"] = release.asset_size;
+            doc["is_prerelease"] = release.is_prerelease;
+        } else {
+            // Already up to date or development version
+            doc["latest_version"] = release.tag_name;
+            doc["release_name"] = release.name;
+            doc["published_at"] = release.published_at;
+
+            int cmp = GitHubOTAChecker::compareVersions(checker.getCurrentVersion(), release.tag_name.c_str());
+            if (cmp == 0) {
+                doc["message"] = "You are running the latest version";
+            } else {
+                doc["message"] = "Development version (ahead of latest release)";
+            }
+        }
+    } else {
+        // Failed to check
+        doc["success"] = false;
+        doc["error"] = "Failed to check for updates. Please check your internet connection.";
+    }
+
+    String json;
+    serializeJson(doc, json);
+    sendJsonResponse(200, json);
+}
+
+void WebServerManager::handleOTAUpdateGitHub() {
+    ESP_LOGI(TAG, "API: OTA update from GitHub");
+
+    // Get update URL from request body
+    if (!_http_server->hasArg("plain")) {
+        sendError(400, "Missing request body");
+        return;
+    }
+
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, _http_server->arg("plain"));
+
+    if (error) {
+        sendError(400, "Invalid JSON");
+        return;
+    }
+
+    // Extract URL from request
+    if (!doc["url"].is<String>()) {
+        sendError(400, "Missing 'url' field");
+        return;
+    }
+
+    String url = doc["url"].as<String>();
+
+    // Send immediate response before starting OTA
+    JsonDocument responseDoc;
+    responseDoc["success"] = true;
+    responseDoc["message"] = "OTA update started. Device will reboot after download.";
+
+    String json;
+    serializeJson(responseDoc, json);
+    sendJsonResponse(200, json);
+
+    // Wait a moment for response to be sent
+    delay(500);
+
+    // Start OTA update in background
+    ESP_LOGI(TAG, "Starting OTA update from: %s", url.c_str());
+
+    OTAManager& ota = OTAManager::getInstance();
+    bool result = ota.updateFromURL(url.c_str());
+
+    if (result) {
+        ESP_LOGI(TAG, "OTA update successful, rebooting...");
+        delay(1000);
+        ESP.restart();
+    } else {
+        ESP_LOGE(TAG, "OTA update failed");
+        // Note: Can't send response here as we already sent one
+    }
+}
+
+// ============================================================================
+// MQTT API Handlers
+// ============================================================================
+
+void WebServerManager::handleMQTTPage() {
+    String html = getMQTTPage();
+    _http_server->send(200, "text/html", html);
+}
+
+void WebServerManager::handleGetMQTTStatus() {
+    MQTTManager& mqtt = MQTTManager::getInstance();
+
+    JsonDocument doc;
+
+    doc["enabled"] = mqtt.isEnabled();
+    doc["connected"] = mqtt.isConnected();
+    doc["state"] = mqtt.getConnectionState();
+
+    const MQTTConfig& cfg = mqtt.getConfig();
+    doc["broker"] = cfg.broker;
+    doc["device_id"] = cfg.device_id;
+
+    doc["uptime"] = mqtt.getConnectionUptime();
+    doc["messages_published"] = mqtt.getMessagesPublished();
+    doc["messages_received"] = mqtt.getMessagesReceived();
+    doc["last_error"] = mqtt.getLastError();
+
+    String json;
+    serializeJson(doc, json);
+    sendJsonResponse(200, json);
+}
+
+void WebServerManager::handleGetMQTTConfig() {
+    MQTTManager& mqtt = MQTTManager::getInstance();
+    const MQTTConfig& cfg = mqtt.getConfig();
+
+    JsonDocument doc;
+
+    doc["enabled"] = cfg.enabled;
+    doc["broker"] = cfg.broker;
+    doc["username"] = cfg.username;
+    // Don't send password
+    doc["device_id"] = cfg.device_id;
+    doc["device_name"] = cfg.device_name;
+    doc["publish_interval"] = cfg.publish_interval;
+    doc["ha_discovery"] = cfg.ha_discovery;
+
+    String json;
+    serializeJson(doc, json);
+    sendJsonResponse(200, json);
+}
+
+void WebServerManager::handleSetMQTTConfig() {
+    if (!_http_server->hasArg("plain")) {
+        sendError(400, "Missing request body");
+        return;
+    }
+
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, _http_server->arg("plain"));
+
+    if (error) {
+        sendError(400, "Invalid JSON");
+        return;
+    }
+
+    MQTTManager& mqtt = MQTTManager::getInstance();
+    bool changed = false;
+
+    // Update broker URL
+    if (doc["broker"].is<const char*>()) {
+        mqtt.setBroker(doc["broker"].as<const char*>());
+        changed = true;
+    }
+
+    // Update credentials
+    if (doc["username"].is<const char*>() || doc["password"].is<const char*>()) {
+        const char* user = doc["username"].is<const char*>() ? doc["username"].as<const char*>() : "";
+        const char* pass = doc["password"].is<const char*>() ? doc["password"].as<const char*>() : "";
+        // Only update password if it's not empty (don't clear existing password)
+        if (strlen(pass) > 0 || strlen(user) > 0) {
+            mqtt.setCredentials(user, pass);
+            changed = true;
+        }
+    }
+
+    // Update device ID
+    if (doc["device_id"].is<const char*>()) {
+        mqtt.setDeviceId(doc["device_id"].as<const char*>());
+        changed = true;
+    }
+
+    // Update device name
+    if (doc["device_name"].is<const char*>()) {
+        mqtt.setDeviceName(doc["device_name"].as<const char*>());
+        changed = true;
+    }
+
+    // Update publish interval
+    if (doc["publish_interval"].is<uint32_t>()) {
+        mqtt.setPublishInterval(doc["publish_interval"].as<uint32_t>());
+        changed = true;
+    }
+
+    // Update HA Discovery
+    if (doc["ha_discovery"].is<bool>()) {
+        mqtt.setHADiscovery(doc["ha_discovery"].as<bool>());
+        changed = true;
+    }
+
+    // Update enabled state
+    if (doc["enabled"].is<bool>()) {
+        mqtt.setEnabled(doc["enabled"].as<bool>());
+        changed = true;
+    }
+
+    // Save configuration to NVS
+    if (changed) {
+        if (mqtt.saveConfig()) {
+            ESP_LOGI(TAG, "MQTT configuration saved");
+
+            // If enabled, try to connect
+            if (mqtt.isEnabled() && !mqtt.isConnected()) {
+                mqtt.connect();
+            }
+
+            sendSuccess("MQTT configuration saved");
+        } else {
+            sendError(500, "Failed to save configuration");
+        }
+    } else {
+        sendSuccess("No changes");
+    }
+}
+
+void WebServerManager::handleMQTTReconnect() {
+    MQTTManager& mqtt = MQTTManager::getInstance();
+
+    if (!mqtt.isEnabled()) {
+        sendError(400, "MQTT is disabled");
+        return;
+    }
+
+    ESP_LOGI(TAG, "MQTT reconnect requested via API");
+    mqtt.reconnect();
+
+    sendSuccess("Reconnection initiated");
+}
+
+void WebServerManager::handleMQTTPublish() {
+    MQTTManager& mqtt = MQTTManager::getInstance();
+
+    if (!mqtt.isConnected()) {
+        sendError(400, "MQTT not connected");
+        return;
+    }
+
+    ESP_LOGI(TAG, "MQTT publish requested via API");
+    mqtt.publishAll();
+
+    sendSuccess("Data published");
 }

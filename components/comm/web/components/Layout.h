@@ -9,6 +9,8 @@
 #ifndef LAYOUT_H
 #define LAYOUT_H
 
+#include "Footer.h"
+
 // ============================================================
 // Navigation Menu Definition
 // ============================================================
@@ -30,16 +32,19 @@ struct NavItem {
 const char HTML_APP_BAR[] PROGMEM = R"rawliteral(
 <div class="app-bar">
     <div class="app-bar-content">
-        <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="app-bar-left">
             <button class="btn-icon btn-text" onclick="toggleNav()" style="color: white; font-size: 1.5rem;">
                 ☰
             </button>
-            <h1 style="margin: 0;">
+            <h1 class="app-bar-title">
                 <span class="nav-icon">⚡</span>
                 ACRouter
+                <span class="app-bar-version" id="header-version">--</span>
             </h1>
         </div>
-        <span id="status-badge" class="badge badge-neutral">--</span>
+        <div class="app-bar-right">
+            <span id="status-badge" class="badge badge-neutral">--</span>
+        </div>
     </div>
 </div>
 )rawliteral";
@@ -62,6 +67,12 @@ const char HTML_NAV_DRAWER[] PROGMEM = R"rawliteral(
             <a href="/wifi" class="nav-item" id="nav-wifi">
                 <span class="nav-icon">📡</span>
                 <span>WiFi</span>
+            </a>
+        </li>
+        <li>
+            <a href="/mqtt" class="nav-item" id="nav-mqtt">
+                <span class="nav-icon">🔗</span>
+                <span>MQTT</span>
             </a>
         </li>
         <li>
@@ -117,6 +128,7 @@ function toggleNav() {
     const drawer = document.getElementById('navDrawer');
     const overlay = document.getElementById('navOverlay');
     const content = document.getElementById('mainContent');
+    const footer = document.querySelector('.app-footer');
     const isMobile = window.innerWidth <= 960;
 
     if (drawer) {
@@ -135,6 +147,9 @@ function toggleNav() {
             drawer.classList.toggle('hidden');
             if (content) {
                 content.classList.toggle('full-width');
+            }
+            if (footer) {
+                footer.classList.toggle('full-width');
             }
         }
     }
@@ -211,10 +226,22 @@ function updateStatusBadge(mode) {
 // Load and update status badge (called on all pages)
 async function loadStatusBadge() {
     try {
-        const response = await fetch('/api/status');
-        if (response.ok) {
-            const data = await response.json();
-            updateStatusBadge(data.mode);
+        const [statusData, infoData] = await Promise.all([
+            fetch('/api/status').then(r => r.json()),
+            fetch('/api/info').then(r => r.json())
+        ]);
+
+        // Update status badge
+        if (statusData) {
+            updateStatusBadge(statusData.mode);
+        }
+
+        // Update version in header
+        if (infoData && infoData.version) {
+            const headerVersion = document.getElementById('header-version');
+            if (headerVersion) {
+                headerVersion.textContent = 'v' + infoData.version;
+            }
         }
     } catch (e) {
         // Silently fail - badge will show default
@@ -229,6 +256,8 @@ window.addEventListener('DOMContentLoaded', () => {
         setActiveNav('nav-dashboard');
     } else if (path.startsWith('/wifi')) {
         setActiveNav('nav-wifi');
+    } else if (path.startsWith('/mqtt')) {
+        setActiveNav('nav-mqtt');
     } else if (path.startsWith('/settings/hardware')) {
         setActiveNav('nav-hardware');
     } else if (path.startsWith('/ota')) {
@@ -381,7 +410,10 @@ inline String buildPageLayout(const char* title, const String& content, const ch
     html += "    </div>\n";
     html += "</main>\n";
 
-    // Footer & Scripts
+    // Footer Component
+    html += FPSTR(HTML_FOOTER_COMPONENT);
+
+    // Scripts & Close Tags
     html += FPSTR(HTML_FOOTER);
 
     return html;

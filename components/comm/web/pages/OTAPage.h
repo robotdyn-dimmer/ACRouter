@@ -147,10 +147,79 @@ const char OTA_STYLES[] PROGMEM = R"rawliteral(
 // ============================================================
 
 const char OTA_CONTENT[] PROGMEM = R"rawliteral(
+<!-- GitHub Update Card -->
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title">📦 Firmware Update</h2>
-        <p class="card-subtitle">Upload new firmware over-the-air</p>
+        <h2 class="card-title">🔄 Check for Updates</h2>
+        <p class="card-subtitle">Automatically check for new firmware releases from GitHub</p>
+    </div>
+    <div class="card-content">
+        <div style="display: flex; gap: var(--spacing-md); align-items: center; margin-bottom: var(--spacing-md);">
+            <button class="btn btn-primary" id="checkUpdateBtn" onclick="checkForUpdates()">
+                🔍 Check for Updates
+            </button>
+            <span id="checkStatus" style="color: var(--text-secondary); font-size: 0.875rem;"></span>
+        </div>
+
+        <!-- Update Available Box -->
+        <div id="updateAvailableBox" class="hidden" style="background: #e3f2fd; border-left: 4px solid var(--info-main); padding: var(--spacing-md); margin-top: var(--spacing-md); border-radius: var(--radius-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-sm);">
+                <div>
+                    <h3 style="margin: 0 0 var(--spacing-xs) 0; color: var(--info-dark);">
+                        <span id="updateVersionTitle">New Version Available</span>
+                    </h3>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">
+                        <strong>Current:</strong> <span id="currentVersionText">--</span> →
+                        <strong>Latest:</strong> <span id="latestVersionText">--</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Changelog -->
+            <div style="margin: var(--spacing-md) 0;">
+                <strong style="color: var(--text-primary);">What's new:</strong>
+                <div id="changelogContent" style="background: white; padding: var(--spacing-sm); margin-top: var(--spacing-xs); border-radius: var(--radius-sm); max-height: 200px; overflow-y: auto; font-size: 0.875rem; white-space: pre-wrap; font-family: monospace;"></div>
+            </div>
+
+            <!-- Release Info -->
+            <div style="display: flex; gap: var(--spacing-lg); margin: var(--spacing-md) 0; font-size: 0.875rem; color: var(--text-secondary);">
+                <div>
+                    <strong>Release:</strong> <span id="releaseName">--</span>
+                </div>
+                <div>
+                    <strong>Published:</strong> <span id="publishedDate">--</span>
+                </div>
+                <div>
+                    <strong>Size:</strong> <span id="assetSize">--</span>
+                </div>
+            </div>
+
+            <!-- Update Button -->
+            <button class="btn btn-primary" id="updateFromGitHubBtn" onclick="updateFromGitHub()" style="width: 100%;">
+                🚀 Download and Install Update
+            </button>
+        </div>
+
+        <!-- Up-to-date Box -->
+        <div id="upToDateBox" class="hidden" style="background: #e8f5e9; border-left: 4px solid var(--success-main); padding: var(--spacing-md); margin-top: var(--spacing-md); border-radius: var(--radius-sm);">
+            <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                <span style="font-size: 1.5rem;">✅</span>
+                <div>
+                    <strong style="color: var(--success-dark);">You're up to date!</strong>
+                    <p style="margin: var(--spacing-xs) 0 0 0; color: var(--text-secondary); font-size: 0.875rem;">
+                        Running version <span id="currentVersionUpToDate">--</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Local File Upload Card -->
+<div class="card mt-lg">
+    <div class="card-header">
+        <h2 class="card-title">📦 Local File Update</h2>
+        <p class="card-subtitle">Upload firmware file from your computer</p>
     </div>
     <div class="card-content">
         <div class="warning-box">
@@ -217,6 +286,7 @@ const char OTA_CONTENT[] PROGMEM = R"rawliteral(
 
 <script>
 let selectedFile = null;
+let latestReleaseUrl = null;
 
 const uploadArea = document.getElementById('uploadArea');
 const fileInput = document.getElementById('fileInput');
@@ -331,6 +401,148 @@ function uploadFirmware() {
 
     xhr.open('POST', '/ota/upload');
     xhr.send(formData);
+}
+
+// ============================================================
+// GitHub Update Functions
+// ============================================================
+
+async function checkForUpdates() {
+    const checkBtn = document.getElementById('checkUpdateBtn');
+    const checkStatus = document.getElementById('checkStatus');
+    const updateBox = document.getElementById('updateAvailableBox');
+    const upToDateBox = document.getElementById('upToDateBox');
+
+    // Disable button and show loading
+    checkBtn.disabled = true;
+    checkStatus.textContent = 'Checking...';
+    updateBox.classList.add('hidden');
+    upToDateBox.classList.add('hidden');
+
+    try {
+        const response = await fetch('/api/ota/check-github');
+        const data = await response.json();
+
+        if (data.success) {
+            if (data.update_available) {
+                // New version available
+                document.getElementById('currentVersionText').textContent = data.current_version;
+                document.getElementById('latestVersionText').textContent = data.latest_version;
+                document.getElementById('updateVersionTitle').textContent = data.release_name || 'New Version Available';
+                document.getElementById('releaseName').textContent = data.release_name || '--';
+                document.getElementById('publishedDate').textContent = formatDate(data.published_at);
+                document.getElementById('assetSize').textContent = formatBytes(data.asset_size);
+                document.getElementById('changelogContent').textContent = data.changelog || 'No changelog available.';
+
+                // Store URL for update
+                latestReleaseUrl = data.asset_url;
+
+                // Show update box
+                updateBox.classList.remove('hidden');
+                checkStatus.textContent = 'Update available!';
+                checkStatus.style.color = 'var(--info-main)';
+            } else {
+                // Up to date
+                document.getElementById('currentVersionUpToDate').textContent = data.current_version;
+                upToDateBox.classList.remove('hidden');
+                checkStatus.textContent = 'You are up to date';
+                checkStatus.style.color = 'var(--success-main)';
+            }
+        } else {
+            // Error checking
+            showAlert(data.error || 'Failed to check for updates', 'error');
+            checkStatus.textContent = 'Check failed';
+            checkStatus.style.color = 'var(--error-main)';
+        }
+    } catch (error) {
+        showAlert('Network error: ' + error.message, 'error');
+        checkStatus.textContent = 'Network error';
+        checkStatus.style.color = 'var(--error-main)';
+    } finally {
+        checkBtn.disabled = false;
+    }
+}
+
+async function updateFromGitHub() {
+    if (!latestReleaseUrl) {
+        showAlert('No update URL available. Please check for updates first.', 'error');
+        return;
+    }
+
+    const updateBtn = document.getElementById('updateFromGitHubBtn');
+    const checkBtn = document.getElementById('checkUpdateBtn');
+
+    // Confirm with user
+    if (!confirm('This will download and install the new firmware. The device will reboot. Continue?')) {
+        return;
+    }
+
+    // Disable buttons
+    updateBtn.disabled = true;
+    checkBtn.disabled = true;
+
+    // Show progress
+    progressContainer.classList.remove('hidden');
+    progressFill.style.width = '0%';
+    progressFill.textContent = '0%';
+    progressStatus.textContent = 'Downloading firmware from GitHub...';
+
+    try {
+        const response = await fetch('/api/ota/update-github', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                url: latestReleaseUrl
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Simulate progress (actual progress happens on backend)
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                if (progress <= 90) {
+                    progressFill.style.width = progress + '%';
+                    progressFill.textContent = progress + '%';
+                    progressStatus.textContent = 'Downloading and installing...';
+                } else {
+                    clearInterval(progressInterval);
+                }
+            }, 500);
+
+            // Wait for device reboot (will lose connection)
+            setTimeout(() => {
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                progressFill.textContent = '100%';
+                progressStatus.textContent = 'Update complete! Device is rebooting...';
+                resultMessage.innerHTML = '<div class="result-success">✅ Firmware updated successfully! Device will reconnect shortly...</div>';
+
+                // Try to reconnect after 10 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 10000);
+            }, 3000);
+        } else {
+            resultMessage.innerHTML = '<div class="result-error">❌ Update failed: ' + (data.error || 'Unknown error') + '</div>';
+            updateBtn.disabled = false;
+            checkBtn.disabled = false;
+        }
+    } catch (error) {
+        resultMessage.innerHTML = '<div class="result-error">❌ Network error: ' + error.message + '</div>';
+        updateBtn.disabled = false;
+        checkBtn.disabled = false;
+    }
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '--';
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
 }
 
 // Initialize

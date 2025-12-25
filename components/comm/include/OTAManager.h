@@ -29,6 +29,9 @@ public:
     bool isUpdating() const { return _updating; }
     int getProgress() const { return _progress; }
 
+    // OTA update from URL
+    bool updateFromURL(const char* url);
+
 private:
     OTAManager();
     ~OTAManager();

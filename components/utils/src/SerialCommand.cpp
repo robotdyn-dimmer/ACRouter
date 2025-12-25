@@ -14,7 +14,10 @@
 #include "WebServerManager.h"
 #include "NTPManager.h"
 #include "OTAManager.h"
+#include "GitHubOTAChecker.h"
+#include "MQTTManager.h"
 #include "esp_log.h"
+#include <esp_ota_ops.h>
 #include <cstring>
 #include <cstdlib>
 
@@ -198,7 +201,6 @@ void SerialCommand::executeCommand(const char* line) {
             if (*p == '"') {
                 // Quoted SSID - find closing quote
                 p++; // Skip opening quote
-                const char* start = p;
                 while (*p && *p != '"' && ssid_len < sizeof(ssid) - 1) {
                     ssid[ssid_len++] = *p++;
                 }
@@ -399,6 +401,390 @@ void SerialCommand::executeCommand(const char* line) {
             ESP_LOGW(TAG, "  No network active");
         }
         ESP_LOGI(TAG, "=========================\n");
+        return;
+    }
+
+    if (strcmp(cmd, "ota-check") == 0) {
+        ESP_LOGI(TAG, "Checking for updates on GitHub...");
+
+        GitHubOTAChecker& checker = GitHubOTAChecker::getInstance();
+        GitHubRelease release;
+
+        // Try to check for updates (returns update availability, not success)
+        bool hasUpdate = checker.checkForUpdate(release);
+
+        // Check if we got valid release info (tag_name not empty = successful check)
+        if (release.tag_name.isEmpty()) {
+            ESP_LOGE(TAG, "Failed to check for updates - no release info received");
+            return;
+        }
+
+        if (hasUpdate) {
+            ESP_LOGI(TAG, "");
+            ESP_LOGI(TAG, "======================================================");
+            ESP_LOGI(TAG, "  Update Available!");
+            ESP_LOGI(TAG, "======================================================");
+            ESP_LOGI(TAG, "Latest Version:  %s", release.tag_name.c_str());
+            ESP_LOGI(TAG, "Release Name:    %s", release.name.c_str());
+            ESP_LOGI(TAG, "Published:       %s", release.published_at.c_str());
+            ESP_LOGI(TAG, "File:            %s (%d bytes)", release.asset_name.c_str(), release.asset_size);
+            ESP_LOGI(TAG, "------------------------------------------------------");
+            ESP_LOGI(TAG, "Changelog:");
+
+            // Print changelog (first 500 chars)
+            String changelog = release.body;
+            if (changelog.length() > 500) {
+                changelog = changelog.substring(0, 500) + "...";
+            }
+
+            // Split by newlines and print
+            int start = 0;
+            int end = changelog.indexOf('\n');
+            while (end != -1) {
+                ESP_LOGI(TAG, "  %s", changelog.substring(start, end).c_str());
+                start = end + 1;
+                end = changelog.indexOf('\n', start);
+            }
+            if (start < changelog.length()) {
+                ESP_LOGI(TAG, "  %s", changelog.substring(start).c_str());
+            }
+
+            ESP_LOGI(TAG, "------------------------------------------------------");
+            ESP_LOGI(TAG, "To update, run: ota-update-github");
+            ESP_LOGI(TAG, "======================================================");
+            ESP_LOGI(TAG, "");
+        } else {
+            // No update available - show current status
+            ESP_LOGI(TAG, "");
+            ESP_LOGI(TAG, "======================================================");
+            ESP_LOGI(TAG, "  No Update Available");
+            ESP_LOGI(TAG, "======================================================");
+            ESP_LOGI(TAG, "Current Version:  %s", checker.getCurrentVersion());
+            ESP_LOGI(TAG, "Latest Release:   %s", release.tag_name.c_str());
+            ESP_LOGI(TAG, "Published:        %s", release.published_at.c_str());
+
+            // Determine status message
+            int cmp = GitHubOTAChecker::compareVersions(checker.getCurrentVersion(), release.tag_name.c_str());
+            if (cmp == 0) {
+                ESP_LOGI(TAG, "Status:           Up to date");
+            } else {
+                ESP_LOGI(TAG, "Status:           Development version (ahead of release)");
+            }
+            ESP_LOGI(TAG, "======================================================");
+            ESP_LOGI(TAG, "");
+        }
+
+        return;
+    }
+
+    if (strcmp(cmd, "ota-update-github") == 0) {
+        ESP_LOGI(TAG, "Starting OTA update from GitHub...");
+
+        // Get latest release info
+        GitHubOTAChecker& checker = GitHubOTAChecker::getInstance();
+        GitHubRelease release;
+
+        if (!checker.checkForUpdate(release)) {
+            ESP_LOGE(TAG, "Failed to get release info");
+            return;
+        }
+
+        if (!checker.isUpdateAvailable()) {
+            ESP_LOGI(TAG, "No update available");
+            return;
+        }
+
+        ESP_LOGI(TAG, "Downloading: %s", release.asset_url.c_str());
+        ESP_LOGI(TAG, "Size: %d bytes", release.asset_size);
+
+        // Perform OTA update
+        bool success = ota.updateFromURL(release.asset_url.c_str());
+
+        if (success) {
+            ESP_LOGI(TAG, "Update successful! Rebooting in 3 seconds...");
+            delay(3000);
+            ESP.restart();
+        } else {
+            ESP_LOGE(TAG, "Update failed");
+        }
+
+        return;
+    }
+
+    if (strcmp(cmd, "ota-update-url") == 0) {
+        if (strlen(arg) == 0) {
+            ESP_LOGE(TAG, "Usage: ota-update-url <url>");
+            return;
+        }
+
+        ESP_LOGI(TAG, "Starting OTA update from URL: %s", arg);
+
+        bool success = ota.updateFromURL(arg);
+
+        if (success) {
+            ESP_LOGI(TAG, "Update successful! Rebooting in 3 seconds...");
+            delay(3000);
+            ESP.restart();
+        } else {
+            ESP_LOGE(TAG, "Update failed");
+        }
+
+        return;
+    }
+
+    if (strcmp(cmd, "ota-rollback") == 0) {
+        ESP_LOGI(TAG, "Rolling back to previous firmware...");
+
+        const esp_partition_t* running = esp_ota_get_running_partition();
+        const esp_partition_t* rollback = esp_ota_get_next_update_partition(running);
+
+        if (rollback == NULL) {
+            ESP_LOGE(TAG, "No rollback partition available");
+            return;
+        }
+
+        ESP_LOGI(TAG, "Current:  %s", running->label);
+        ESP_LOGI(TAG, "Rollback: %s", rollback->label);
+
+        esp_err_t err = esp_ota_set_boot_partition(rollback);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "Rollback failed: %s", esp_err_to_name(err));
+            return;
+        }
+
+        ESP_LOGI(TAG, "Rollback configured. Rebooting...");
+        delay(2000);
+        ESP.restart();
+
+        return;
+    }
+
+    if (strcmp(cmd, "ota-info") == 0) {
+        const esp_partition_t* running = esp_ota_get_running_partition();
+        const esp_partition_t* next = esp_ota_get_next_update_partition(running);
+
+        ESP_LOGI(TAG, "");
+        ESP_LOGI(TAG, "======================================================");
+        ESP_LOGI(TAG, "  OTA Partition Information");
+        ESP_LOGI(TAG, "======================================================");
+        ESP_LOGI(TAG, "Running Partition:");
+        ESP_LOGI(TAG, "  Label:   %s", running->label);
+        ESP_LOGI(TAG, "  Address: 0x%08x", running->address);
+        ESP_LOGI(TAG, "  Size:    %d KB", running->size / 1024);
+        ESP_LOGI(TAG, "");
+
+        if (next) {
+            ESP_LOGI(TAG, "Update Target:");
+            ESP_LOGI(TAG, "  Label:   %s", next->label);
+            ESP_LOGI(TAG, "  Address: 0x%08x", next->address);
+            ESP_LOGI(TAG, "  Size:    %d KB", next->size / 1024);
+        } else {
+            ESP_LOGI(TAG, "No update target available");
+        }
+
+        ESP_LOGI(TAG, "");
+        ESP_LOGI(TAG, "Free Heap:   %d KB", ESP.getFreeHeap() / 1024);
+        ESP_LOGI(TAG, "Flash Size:  %d MB", ESP.getFlashChipSize() / (1024 * 1024));
+        ESP_LOGI(TAG, "======================================================");
+        ESP_LOGI(TAG, "");
+
+        return;
+    }
+
+    // ================================================================
+    // MQTT Commands
+    // ================================================================
+
+    if (strcmp(cmd, "mqtt-status") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        const MQTTConfig& cfg = mqtt.getConfig();
+
+        ESP_LOGI(TAG, "");
+        ESP_LOGI(TAG, "======================================================");
+        ESP_LOGI(TAG, "  MQTT Status");
+        ESP_LOGI(TAG, "======================================================");
+        ESP_LOGI(TAG, "State:         %s", mqtt.getConnectionState());
+        ESP_LOGI(TAG, "Enabled:       %s", cfg.enabled ? "Yes" : "No");
+        ESP_LOGI(TAG, "Broker:        %s", strlen(cfg.broker) > 0 ? cfg.broker : "(not configured)");
+        ESP_LOGI(TAG, "Device ID:     %s", cfg.device_id);
+        ESP_LOGI(TAG, "Device Name:   %s", strlen(cfg.device_name) > 0 ? cfg.device_name : "(default)");
+        ESP_LOGI(TAG, "HA Discovery:  %s", cfg.ha_discovery ? "Enabled" : "Disabled");
+        ESP_LOGI(TAG, "Pub Interval:  %lu ms", cfg.publish_interval);
+
+        if (mqtt.isConnected()) {
+            ESP_LOGI(TAG, "------------------------------------------------------");
+            ESP_LOGI(TAG, "Uptime:        %lu sec", mqtt.getConnectionUptime());
+            ESP_LOGI(TAG, "Published:     %lu messages", mqtt.getMessagesPublished());
+            ESP_LOGI(TAG, "Received:      %lu messages", mqtt.getMessagesReceived());
+        }
+
+        if (strlen(mqtt.getLastError()) > 0) {
+            ESP_LOGI(TAG, "Last Error:    %s", mqtt.getLastError());
+        }
+
+        ESP_LOGI(TAG, "======================================================");
+        ESP_LOGI(TAG, "");
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-config") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        const MQTTConfig& cfg = mqtt.getConfig();
+
+        ESP_LOGI(TAG, "");
+        ESP_LOGI(TAG, "=== MQTT Configuration ===");
+        ESP_LOGI(TAG, "Enabled:       %s", cfg.enabled ? "Yes" : "No");
+        ESP_LOGI(TAG, "Broker:        %s", cfg.broker);
+        ESP_LOGI(TAG, "Username:      %s", strlen(cfg.username) > 0 ? cfg.username : "(none)");
+        ESP_LOGI(TAG, "Password:      %s", strlen(cfg.password) > 0 ? "****" : "(none)");
+        ESP_LOGI(TAG, "Device ID:     %s", cfg.device_id);
+        ESP_LOGI(TAG, "Device Name:   %s", cfg.device_name);
+        ESP_LOGI(TAG, "Pub Interval:  %lu ms", cfg.publish_interval);
+        ESP_LOGI(TAG, "HA Discovery:  %s", cfg.ha_discovery ? "Enabled" : "Disabled");
+        ESP_LOGI(TAG, "===========================");
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-broker") == 0) {
+        if (strlen(arg) == 0) {
+            MQTTManager& mqtt = MQTTManager::getInstance();
+            ESP_LOGI(TAG, "Current broker: %s", mqtt.getConfig().broker);
+            ESP_LOGI(TAG, "Usage: mqtt-broker <url>");
+            ESP_LOGI(TAG, "Example: mqtt-broker mqtt://192.168.1.10:1883");
+            return;
+        }
+
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        mqtt.setBroker(arg);
+        ESP_LOGI(TAG, "MQTT broker set to: %s", arg);
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-user") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        if (strlen(arg) == 0) {
+            ESP_LOGI(TAG, "Current username: %s",
+                     strlen(mqtt.getConfig().username) > 0 ? mqtt.getConfig().username : "(none)");
+            return;
+        }
+
+        mqtt.setCredentials(arg, nullptr);
+        ESP_LOGI(TAG, "MQTT username set to: %s", arg);
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-pass") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        if (strlen(arg) == 0) {
+            ESP_LOGI(TAG, "Password: %s",
+                     strlen(mqtt.getConfig().password) > 0 ? "****" : "(none)");
+            return;
+        }
+
+        mqtt.setCredentials(nullptr, arg);
+        ESP_LOGI(TAG, "MQTT password updated");
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-device-id") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        if (strlen(arg) == 0) {
+            ESP_LOGI(TAG, "Current device ID: %s", mqtt.getConfig().device_id);
+            return;
+        }
+
+        mqtt.setDeviceId(arg);
+        ESP_LOGI(TAG, "MQTT device ID set to: %s", arg);
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-device-name") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        if (strlen(arg) == 0) {
+            ESP_LOGI(TAG, "Current device name: %s",
+                     strlen(mqtt.getConfig().device_name) > 0 ? mqtt.getConfig().device_name : "(default)");
+            return;
+        }
+
+        mqtt.setDeviceName(arg);
+        ESP_LOGI(TAG, "MQTT device name set to: %s", arg);
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-interval") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        if (strlen(arg) == 0) {
+            ESP_LOGI(TAG, "Current publish interval: %lu ms", mqtt.getConfig().publish_interval);
+            ESP_LOGI(TAG, "Usage: mqtt-interval <ms> (1000-60000)");
+            return;
+        }
+
+        uint32_t interval = atoi(arg);
+        if (interval < 1000 || interval > 60000) {
+            ESP_LOGE(TAG, "Invalid interval. Must be 1000-60000 ms");
+            return;
+        }
+
+        mqtt.setPublishInterval(interval);
+        ESP_LOGI(TAG, "MQTT publish interval set to: %lu ms", interval);
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-ha-discovery") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        if (strlen(arg) == 0) {
+            ESP_LOGI(TAG, "Home Assistant discovery: %s",
+                     mqtt.getConfig().ha_discovery ? "Enabled" : "Disabled");
+            ESP_LOGI(TAG, "Usage: mqtt-ha-discovery <0|1>");
+            return;
+        }
+
+        bool enable = (strcmp(arg, "1") == 0 || strcmp(arg, "true") == 0);
+        mqtt.setHADiscovery(enable);
+        ESP_LOGI(TAG, "Home Assistant discovery: %s", enable ? "Enabled" : "Disabled");
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-enable") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        mqtt.setEnabled(true);
+        ESP_LOGI(TAG, "MQTT enabled");
+
+        if (strlen(mqtt.getConfig().broker) == 0) {
+            ESP_LOGW(TAG, "Note: Broker not configured. Use mqtt-broker to set.");
+        }
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-disable") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        mqtt.setEnabled(false);
+        ESP_LOGI(TAG, "MQTT disabled");
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-reconnect") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        if (!mqtt.isEnabled()) {
+            ESP_LOGE(TAG, "MQTT is disabled. Use mqtt-enable first.");
+            return;
+        }
+
+        ESP_LOGI(TAG, "Forcing MQTT reconnection...");
+        mqtt.reconnect();
+        return;
+    }
+
+    if (strcmp(cmd, "mqtt-publish") == 0) {
+        MQTTManager& mqtt = MQTTManager::getInstance();
+        if (!mqtt.isConnected()) {
+            ESP_LOGE(TAG, "MQTT not connected");
+            return;
+        }
+
+        ESP_LOGI(TAG, "Publishing all data...");
+        mqtt.publishAll();
+        ESP_LOGI(TAG, "Done");
         return;
     }
 
@@ -760,7 +1146,7 @@ bool SerialCommand::handleConfigCommand(const char* cmd, const char* arg) {
         CurrentSensorDriver driver;
         if (!parseCurrentSensorType(type_str, driver)) {
             ESP_LOGE(TAG, "ERROR: Invalid sensor type '%s'", type_str);
-            ESP_LOGI(TAG, "Valid types: SCT013-5A/10A/20A/30A/50A/60A/80A/100A, ACS712-5A/20A/30A");
+            ESP_LOGI(TAG, "Valid types: SCT013-5A/10A/20A/30A/50A/60A/80A/100A, ACS712-5A/10A/20A/30A/50A");
             return true;
         }
 
@@ -1441,7 +1827,7 @@ void SerialCommand::printHelp() {
     ESP_LOGI(TAG, "                       - Configure current sensor");
     ESP_LOGI(TAG, "                         Bindings: GRID, SOLAR, LOAD_1..8");
     ESP_LOGI(TAG, "                         Types: SCT013-5A/10A/20A/30A/50A/60A/80A/100A,");
-    ESP_LOGI(TAG, "                                ACS712-5A/20A/30A");
+    ESP_LOGI(TAG, "                                ACS712-5A/10A/20A/30A/50A");
     ESP_LOGI(TAG, "  hardware-current-show <binding>");
     ESP_LOGI(TAG, "                       - Show current sensor config");
     ESP_LOGI(TAG, "  hardware-current-list");
@@ -1476,6 +1862,26 @@ void SerialCommand::printHelp() {
     ESP_LOGI(TAG, "");
     ESP_LOGI(TAG, "OTA FIRMWARE UPDATE");
     ESP_LOGI(TAG, "  ota-status           - Show OTA status & URLs");
+    ESP_LOGI(TAG, "  ota-check            - Check for updates on GitHub");
+    ESP_LOGI(TAG, "  ota-update-github    - Download and install from GitHub");
+    ESP_LOGI(TAG, "  ota-update-url <url> - Download and install from custom URL");
+    ESP_LOGI(TAG, "  ota-rollback         - Rollback to previous firmware");
+    ESP_LOGI(TAG, "  ota-info             - Show OTA partition info");
+    ESP_LOGI(TAG, "");
+    ESP_LOGI(TAG, "MQTT");
+    ESP_LOGI(TAG, "  mqtt-status          - Show MQTT connection status");
+    ESP_LOGI(TAG, "  mqtt-config          - Show MQTT configuration");
+    ESP_LOGI(TAG, "  mqtt-broker <url>    - Set broker (mqtt://host:port)");
+    ESP_LOGI(TAG, "  mqtt-user <name>     - Set username");
+    ESP_LOGI(TAG, "  mqtt-pass <pass>     - Set password");
+    ESP_LOGI(TAG, "  mqtt-device-id <id>  - Set device ID for topics");
+    ESP_LOGI(TAG, "  mqtt-device-name <n> - Set device name (for HA)");
+    ESP_LOGI(TAG, "  mqtt-interval <ms>   - Set publish interval (1000-60000)");
+    ESP_LOGI(TAG, "  mqtt-ha-discovery <0|1> - Enable/disable HA discovery");
+    ESP_LOGI(TAG, "  mqtt-enable          - Enable MQTT");
+    ESP_LOGI(TAG, "  mqtt-disable         - Disable MQTT");
+    ESP_LOGI(TAG, "  mqtt-reconnect       - Force reconnection");
+    ESP_LOGI(TAG, "  mqtt-publish         - Force publish all data");
     ESP_LOGI(TAG, "");
     ESP_LOGI(TAG, "SYSTEM");
     ESP_LOGI(TAG, "  reboot               - Restart ESP32");

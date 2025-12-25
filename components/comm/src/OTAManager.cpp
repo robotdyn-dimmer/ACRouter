@@ -4,6 +4,8 @@
 #include "DimmerHAL.h"
 #include "RouterController.h"
 #include "../web/pages/OTAPage.h"
+#include <HTTPClient.h>
+#include <WiFiClient.h>
 
 static const char* TAG = "OTA";
 
@@ -156,4 +158,114 @@ void OTAManager::handleOTAUploadStatus() {
         delay(3000);
         ESP.restart();
     }
+}
+
+bool OTAManager::updateFromURL(const char* url) {
+    HTTPClient http;
+
+    ESP_LOGI(TAG, "Connecting to: %s", url);
+
+    http.begin(url);
+    http.addHeader("User-Agent", "ACRouter-OTA");
+
+    int httpCode = http.GET();
+
+    if (httpCode != HTTP_CODE_OK) {
+        ESP_LOGE(TAG, "HTTP GET failed: %d", httpCode);
+        http.end();
+        return false;
+    }
+
+    int contentLength = http.getSize();
+    if (contentLength <= 0) {
+        ESP_LOGE(TAG, "Invalid content length: %d", contentLength);
+        http.end();
+        return false;
+    }
+
+    ESP_LOGI(TAG, "Content length: %d bytes", contentLength);
+
+    // Suspend critical tasks before OTA
+    ESP_LOGI(TAG, "Suspending critical tasks for OTA...");
+
+    // Stop RouterController first (high-level control)
+    RouterController& router = RouterController::getInstance();
+    if (router.isInitialized()) {
+        router.emergencyStop();
+        ESP_LOGI(TAG, "RouterController stopped");
+    }
+
+    // Stop DimmerHAL (turn off TRIAC outputs)
+    DimmerHAL& dimmer = DimmerHAL::getInstance();
+    if (dimmer.isInitialized()) {
+        dimmer.allOff();
+        ESP_LOGI(TAG, "DimmerHAL outputs disabled");
+    }
+
+    // Stop PowerMeterADC (stop DMA and processing task)
+    PowerMeterADC& powerMeter = PowerMeterADC::getInstance();
+    if (powerMeter.isRunning()) {
+        powerMeter.stop();
+        ESP_LOGI(TAG, "PowerMeterADC stopped");
+    }
+
+    // Small delay to ensure all tasks have stopped
+    delay(100);
+
+    ESP_LOGI(TAG, "All critical tasks suspended, starting update...");
+
+    // Begin OTA update
+    if (!Update.begin(contentLength)) {
+        ESP_LOGE(TAG, "OTA begin failed: %s", Update.errorString());
+        http.end();
+        return false;
+    }
+
+    // Download and write firmware
+    WiFiClient* stream = http.getStreamPtr();
+    size_t written = 0;
+    uint8_t buffer[1024];
+    int lastProgress = -1;
+
+    while (http.connected() && written < contentLength) {
+        size_t available = stream->available();
+        if (available) {
+            int len = stream->readBytes(buffer, min(available, sizeof(buffer)));
+
+            if (Update.write(buffer, len) != len) {
+                ESP_LOGE(TAG, "Write failed");
+                Update.abort();
+                http.end();
+                return false;
+            }
+
+            written += len;
+
+            // Progress indicator
+            int progress = (written * 100) / contentLength;
+            if (progress != lastProgress && progress % 10 == 0) {
+                ESP_LOGI(TAG, "Progress: %d%% (%d / %d bytes)", progress, written, contentLength);
+                lastProgress = progress;
+            }
+        }
+        delay(1);
+    }
+
+    http.end();
+
+    if (written != contentLength) {
+        ESP_LOGE(TAG, "Download incomplete: %d / %d bytes", written, contentLength);
+        Update.abort();
+        return false;
+    }
+
+    // Finalize update
+    if (!Update.end(true)) {
+        ESP_LOGE(TAG, "OTA end failed: %s", Update.errorString());
+        return false;
+    }
+
+    ESP_LOGI(TAG, "Firmware written successfully");
+
+    return true;
 }

@@ -301,6 +301,64 @@ const char DASHBOARD_STYLES[] PROGMEM = R"rawliteral(
 .manual-section .section-title {
     color: var(--warning-dark);
 }
+
+/* Dimmer Progress Bar */
+.dimmer-progress {
+    width: 100%;
+    height: 6px;
+    background: var(--grey-300);
+    border-radius: 3px;
+    margin-top: var(--spacing-sm);
+    overflow: hidden;
+}
+
+.dimmer-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success-main) 0%, var(--primary-main) 100%);
+    transition: width var(--transition-normal);
+    border-radius: 3px;
+}
+
+/* Enhanced Power Values */
+.power-value {
+    font-size: 3.5rem;
+}
+
+/* Grid Direction Indicator - More Prominent */
+#grid-direction {
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    margin-top: var(--spacing-xs);
+    display: inline-block;
+}
+
+#grid-direction.importing {
+    background-color: rgba(211, 47, 47, 0.1);
+    color: var(--error-main);
+}
+
+#grid-direction.exporting {
+    background-color: rgba(46, 125, 50, 0.1);
+    color: var(--success-main);
+}
+
+#grid-direction.balanced {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-secondary);
+}
+
+/* Responsive - smaller power values on mobile */
+@media (max-width: 600px) {
+    .power-value {
+        font-size: 2rem;
+    }
+
+    .device-value {
+        font-size: 1.5rem;
+    }
+}
 </style>
 )rawliteral";
 
@@ -362,6 +420,9 @@ const char DASHBOARD_CONTENT[] PROGMEM = R"rawliteral(
             <div class="device-value">
                 <span id="dimmer-level-1">--</span>
                 <span class="power-unit">%</span>
+            </div>
+            <div class="dimmer-progress">
+                <div class="dimmer-progress-fill" id="dimmer-progress-1" style="width: 0%"></div>
             </div>
         </div>
     </div>
@@ -539,17 +600,19 @@ async function loadMetrics() {
     const gridPower = data.metrics.power_grid;
     document.getElementById('power-grid').textContent = Math.round(gridPower);
 
-    // Grid direction indicator
+    // Grid direction indicator - Enhanced with classes
     const gridDir = document.getElementById('grid-direction');
+    gridDir.className = ''; // Clear classes
+
     if (gridPower > 10) {
         gridDir.textContent = '← Importing from grid';
-        gridDir.style.color = 'var(--error-main)';
+        gridDir.classList.add('importing');
     } else if (gridPower < -10) {
         gridDir.textContent = '→ Exporting to grid';
-        gridDir.style.color = 'var(--success-main)';
+        gridDir.classList.add('exporting');
     } else {
         gridDir.textContent = '⚖ Balanced';
-        gridDir.style.color = 'var(--text-secondary)';
+        gridDir.classList.add('balanced');
     }
 
     // Update Solar Power (show absolute value, solar is typically negative = supplying)
@@ -566,6 +629,12 @@ async function loadMetrics() {
             const levelEl = document.getElementById('dimmer-level-' + dimmer.id);
             if (levelEl) {
                 levelEl.textContent = dimmer.level;
+            }
+
+            // Update progress bar
+            const progressEl = document.getElementById('dimmer-progress-' + dimmer.id);
+            if (progressEl) {
+                progressEl.style.width = dimmer.level + '%';
             }
 
             // Also update manual slider if in manual mode

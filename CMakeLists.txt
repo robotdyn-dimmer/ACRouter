@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.16)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 # Project definition
-project(ACRouter-project VERSION 1.0.0)
+project(ACRouter-project VERSION 1.2.0)
 
 # Build information
 message(STATUS "Building AC Power Router Controller v${PROJECT_VERSION}")
