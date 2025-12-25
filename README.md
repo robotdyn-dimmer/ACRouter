@@ -72,6 +72,14 @@ Typical daily behavior of a grid-connected PV system with a water heater load.
 - Serial console for advanced users
 - All settings stored in non-volatile memory
 
+### 🔗 MQTT & Home Assistant (v1.2.0+)
+
+- Full MQTT client with auto-reconnect and LWT
+- Home Assistant Auto-Discovery
+- Real-time metrics publishing
+- Remote control via MQTT commands
+- Web UI for MQTT configuration
+
 ### 🔌 Flexible Hardware
 - Configurable GPIO pins via web interface
 - Support for various sensor types
@@ -230,6 +238,7 @@ After flashing, the device creates a WiFi network:
 | [⚙️ Compilation Guide](docs/02_COMPILATION.md) | Build instructions and troubleshooting |
 | [📐 Architecture](docs/03_STRUCTURE.md) | Software modules and API |
 | [🎮 Operating Modes](docs/04_ROUTER_MODES.md) | Detailed mode descriptions |
+| [🔗 MQTT Guide](docs/11_MQTT_GUIDE.md) | MQTT integration and topics |
 | [🗺️ Roadmap](ROADMAP.md) | Development plans |
 
 ---
