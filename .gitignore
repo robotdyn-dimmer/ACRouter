@@ -65,8 +65,8 @@ specification/
 README.md
 *.md
 
-# Allow release guide
-!RELEASE_GUIDE.txt
+# Developer release guide (internal only)
+RELEASE_GUIDE.txt
 
 # Developer scripts (not for public repository)
 release.bat
