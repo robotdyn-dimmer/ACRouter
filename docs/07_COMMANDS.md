@@ -524,7 +524,7 @@ time-sync
 
 ## MQTT Integration
 
-ACRouter supports MQTT for remote monitoring and control. See [12_MQTT_GUIDE.md](12_MQTT_GUIDE.md) for complete documentation.
+ACRouter supports MQTT for remote monitoring and control. See [11_MQTT_GUIDE.md](11_MQTT_GUIDE.md) for complete documentation.
 
 ### `mqtt-status`
 
