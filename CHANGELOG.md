@@ -44,7 +44,7 @@ Public changelog for stable releases.
 
 #### Documentation
 
-- Complete MQTT guide (English and Russian)
+- Complete MQTT guide
 - Home Assistant integration guide with examples
 - Dashboard and automation examples for HA
 
