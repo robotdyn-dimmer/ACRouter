@@ -1,16 +1,3 @@
----
-author: RobotDyn
-description: ACRouter v2.0 hardware wiring guide — connect rbAmp current/voltage sensing and DimmerLink dimmer modules to an ESP32 or ESP32-C2 over the I2C bus. Covers per-target pins, pull-ups, module addresses, roles, and CT models.
-keywords:
-- ACRouter hardware wiring
-- ACRouter I2C modules
-- rbAmp current sensor
-- DimmerLink dimmer
-- ESP32 solar router wiring
-- ESP32-C2 I2C pins
-title: ACRouter Hardware Wiring Guide — rbAmp & DimmerLink over I2C
-url: acrouter-hardware-guide
----
 [← Overview](https://www.rbdimmer.com/acrouter-overview) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Compilation →](https://www.rbdimmer.com/acrouter-application-compilation)
 
 # Hardware Wiring Guide

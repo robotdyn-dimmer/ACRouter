@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: ACRouter v2.0 commissioning guide — bring up a freshly wired and flashed system. Discover rbAmp and DimmerLink modules, assign per-channel roles, set CT models, resolve I2C addresses, verify signed grid power, and start regulation.
-keywords:
-- ACRouter commissioning
-- ACRouter module discovery
-- rbAmp role assignment
-- DimmerLink setup
-- ACRouter bring-up
-title: ACRouter Commissioning Guide — Module Bring-Up (v2.0)
-url: acrouter-commissioning
----
 [← Compilation](https://www.rbdimmer.com/acrouter-application-compilation) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Operating Modes →](https://www.rbdimmer.com/acrouter-operating-modes)
 
 # Commissioning

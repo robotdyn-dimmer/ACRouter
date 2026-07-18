@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: Integrate ACRouter v2.0 with Home Assistant over MQTT auto-discovery — the sensors, mode select, number, button, and relay switch entities it registers, plus setup and the current dimmer-entity limitation.
-keywords:
-- ACRouter Home Assistant
-- ACRouter MQTT discovery
-- solar router Home Assistant
-- ACRouter HA entities
-- energy dashboard
-title: ACRouter Home Assistant Integration — MQTT Discovery (v2.0)
-url: acrouter-home-assistant-integration
----
 [← MQTT Guide](https://www.rbdimmer.com/acrouter-mqtt-guide) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Glossary →](https://www.rbdimmer.com/acrouter-glossary)
 
 # Home Assistant Integration

@@ -1,14 +1,3 @@
----
-author: RobotDyn
-description: ACRouter development roadmap — delivered features and planned direction by phase (smart-module v2.0 architecture, connectivity & automation, advanced energy logic, ecosystem).
-keywords:
-- ACRouter roadmap
-- ACRouter planned features
-- ACRouter development phases
-- RobotDyn solar router
-title: ACRouter Roadmap — Delivered & Planned Features
-url: acrouter-roadmap
----
 [← Glossary](https://www.rbdimmer.com/acrouter-glossary) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [ChangeLog →](https://www.rbdimmer.com/acrouter-changelog)
 
 # ACRouter Roadmap

@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: ACRouter v2.0 operating modes — the seven router modes (OFF, AUTO, ECO, OFFGRID, MANUAL, BOOST, GRID_LIMIT), how each balances grid power, the sensor roles each needs, and how to set them via the API.
-keywords:
-- ACRouter operating modes
-- solar router AUTO mode
-- ACRouter ECO GRID_LIMIT
-- AC load control modes
-- solar diverter modes
-title: ACRouter Operating Modes — Seven Router Modes (v2.0)
-url: acrouter-operating-modes
----
 [← Commissioning](https://www.rbdimmer.com/acrouter-commissioning) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Terminal Commands →](https://www.rbdimmer.com/acrouter-terminal-commands)
 
 # Operating Modes

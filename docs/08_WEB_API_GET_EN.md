@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: ACRouter v2.0 REST API — GET endpoints. Read status, live power metrics, configuration, device info/features, discovered modules, rbAmp CT models, dimmers, relays, WiFi, MQTT, and NTP status over HTTP JSON.
-keywords:
-- ACRouter REST API
-- ACRouter GET endpoints
-- solar router API
-- ACRouter api status
-- ACRouter api metrics
-title: ACRouter Web API — GET Endpoints (v2.0)
-url: acrouter-web-api-get
----
 [← Terminal Commands](https://www.rbdimmer.com/acrouter-terminal-commands) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Web API - POST →](https://www.rbdimmer.com/acrouter-web-api-post)
 
 # Web API — GET Endpoints

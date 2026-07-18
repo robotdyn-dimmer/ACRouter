@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: ACRouter v2.0 MQTT guide — broker setup, the telemetry topic tree (metrics, JSON, per-entity), config-over-MQTT provisioning, command topics, and headless C2-MQTT operation.
-keywords:
-- ACRouter MQTT
-- ACRouter MQTT topics
-- config over MQTT
-- ESP32-C2 headless MQTT
-- solar router MQTT broker
-title: ACRouter MQTT Guide — Topics & Config-over-MQTT (v2.0)
-url: acrouter-mqtt-guide
----
 [← Sensor Calibration](https://www.rbdimmer.com/acrouter-sensor-calibration) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Home Assistant Integration →](https://www.rbdimmer.com/acrouter-home-assistant-integration)
 
 # MQTT Guide

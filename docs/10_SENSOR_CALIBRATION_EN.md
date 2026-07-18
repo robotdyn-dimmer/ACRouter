@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: ACRouter v2.0 sensor calibration — rbAmp modules are factory-calibrated; the only user setting is the CT model. How CT-model selection works, the verify-then-set safeguard, supported models, and how to verify accuracy.
-keywords:
-- ACRouter sensor calibration
-- rbAmp CT model
-- SCT-013 calibration
-- ACRouter rbamp-status
-- solar meter accuracy
-title: ACRouter Sensor Calibration — rbAmp & CT Models (v2.0)
-url: acrouter-sensor-calibration
----
 [← Web API - POST](https://www.rbdimmer.com/acrouter-web-api-post) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: MQTT Guide →](https://www.rbdimmer.com/acrouter-mqtt-guide)
 
 # Sensor Calibration

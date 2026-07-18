@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: ACRouter v2.0 REST API — POST endpoints. Set configuration and operating mode, commission modules (rescan, roles, rbAmp address/CT model), configure hardware, control dimmers/relays, WiFi, MQTT, NTP, and OTA.
-keywords:
-- ACRouter REST API POST
-- ACRouter set mode
-- ACRouter commissioning API
-- solar router control API
-- ACRouter modules role
-title: ACRouter Web API — POST Endpoints (v2.0)
-url: acrouter-web-api-post
----
 [← Web API - GET](https://www.rbdimmer.com/acrouter-web-api-get) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Sensor Calibration →](https://www.rbdimmer.com/acrouter-sensor-calibration)
 
 # Web API — POST Endpoints

@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: ACRouter v2.0 serial terminal command reference — router modes, rbAmp and DimmerLink modules, device registry, ESP-NOW, I2C/hardware, relays, dimmers, config, WiFi, MQTT, OTA, and diagnostics over the serial console.
-keywords:
-- ACRouter terminal commands
-- ACRouter serial CLI
-- rbAmp DimmerLink commands
-- ACRouter router-mode command
-- solar router serial console
-title: ACRouter Terminal Commands — Serial CLI Reference (v2.0)
-url: acrouter-terminal-commands
----
 [← Router Modes](https://www.rbdimmer.com/acrouter-operating-modes) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Web API - GET →](https://www.rbdimmer.com/acrouter-web-api-get)
 
 # Terminal Commands

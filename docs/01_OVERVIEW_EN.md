@@ -1,16 +1,3 @@
----
-author: RobotDyn
-description: Technical overview of the ACRouter v2.0 solar power router — smart rbAmp + DimmerLink I2C modules, the grid-balancing control loop, seven operating modes, two ESP32 targets, and external web app / REST / MQTT / OTA interfaces.
-keywords:
-- ACRouter overview
-- solar power router architecture
-- rbAmp DimmerLink
-- ESP32 solar router
-- solar self-consumption controller
-- ACRouter operating modes
-title: ACRouter Overview — v2.0 Architecture & Features
-url: acrouter-overview
----
 [← ChangeLog](https://www.rbdimmer.com/acrouter-changelog) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Hardware Guide →](https://www.rbdimmer.com/acrouter-hardware-guide)
 
 # Application Overview

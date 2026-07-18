@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: Plain-language glossary for ACRouter — the hardware, electrical, and software terms used across the docs (CT clamp, I2C, pull-up, NVS, contactor, RCD/GFCI, power factor, QoS, serial console, and more).
-keywords:
-- ACRouter glossary
-- CT clamp meaning
-- I2C pull-up
-- contactor RCD GFCI
-- ACRouter terms
-title: ACRouter Glossary — Terms Explained
-url: acrouter-glossary
----
 [← Home Assistant Integration](https://www.rbdimmer.com/acrouter-home-assistant-integration) | [Contents](https://www.rbdimmer.com/acrouter-what-is)
 
 # Glossary

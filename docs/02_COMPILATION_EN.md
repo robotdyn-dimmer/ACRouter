@@ -1,15 +1,3 @@
----
-author: RobotDyn
-description: Build and flash ACRouter v2.0 firmware with ESP-IDF 5.5. Covers the two targets (ESP32 and ESP32-C2), the three compile profiles (ESP32 full / C2-HTTP / C2-MQTT), per-profile build commands, and the capability-aware runtime.
-keywords:
-- ACRouter compilation
-- ESP-IDF 5.5 build
-- ESP32-C2 firmware
-- ACRouter compile profiles
-- ACRouter flash firmware
-title: ACRouter Compilation Guide — ESP-IDF 5.5, Targets & Profiles (v2.0)
-url: acrouter-application-compilation
----
 [← Hardware Guide](https://www.rbdimmer.com/acrouter-hardware-guide) | [Contents](https://www.rbdimmer.com/acrouter-what-is) | [Next: Commissioning →](https://www.rbdimmer.com/acrouter-commissioning)
 
 # Compilation
