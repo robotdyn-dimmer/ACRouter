@@ -7,6 +7,7 @@
 <p align="center">
   <a href="#what-is-acrouter">About</a> •
   <a href="#features">Features</a> •
+  <a href="#web-app">Web App</a> •
   <a href="#hardware">Hardware</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#operating-modes">Modes</a> •
@@ -67,8 +68,8 @@ ACRouter v2.0 moves sensing and dimming off the host board and onto **smart modu
 
 ### 📱 Configuration & Integration
 - Built-in WiFi Access Point for first-time setup
-- **External web app** — the device redirects to an externally-hosted UI (not served on-device); minimal on-device pages for WiFi / MQTT / Relays remain
-- **REST API** (`/api/*`) — see [`WEB_API.md`](WEB_API.md)
+- **External web app** with real-time dashboard, module management, and mode control (see [Web App](#web-app) below)
+- **REST API** (`/api/*`) — see [Web API GET](docs/08_WEB_API_GET_EN.md) / [Web API POST](docs/09_WEB_API_POST_EN.md)
 - **MQTT** client with LWT + **Home Assistant auto-discovery**; config-over-MQTT for headless devices
 - Serial console for advanced users
 - Settings stored in non-volatile memory
@@ -128,6 +129,31 @@ ACRouter supports **7 operating modes**:
 
 ---
 
+## Web App
+
+ACRouter ships with an **external web application** that communicates with the device over the REST API. The device itself acts as a headless JSON/MQTT API — on first access it redirects the browser to the web app.
+
+<p align="center">
+  <img src="docs/_media/acr-ss-dashboard/out/acr-ss-dashboard.final.png" alt="ACRouter Dashboard" width="700">
+</p>
+
+The dashboard provides:
+
+- **Real-time power monitoring** — grid, solar, and load power with direction indicators, voltage, frequency, and power factor (all sourced from rbAmp smart modules)
+- **Live load control** — per-dimmer output level (0–100%) with DimmerLink status cards
+- **One-click mode switching** — select from six dashboard modes (OFF, AUTO, ECO, OFFGRID, MANUAL, BOOST) plus GRID_LIMIT via API
+- **System information** — firmware version, chip model, uptime, heap, and WiFi signal
+
+Under **Settings → Modules** the app shows all smart modules discovered on the I2C bus and lets you manage the device inventory:
+
+<p align="center">
+  <img src="docs/_media/acr-ss-modules-discover/out/acr-ss-modules-discover.final.png" alt="ACRouter Modules Discovery" width="700">
+</p>
+
+Additional settings pages cover WiFi, MQTT broker, NTP/timezone, OTA updates, and hardware configuration — all stored in non-volatile memory and persisting across reboots.
+
+---
+
 ## Quick Start
 
 ### 1. Flash the firmware
@@ -144,7 +170,7 @@ idf.py build
 idf.py -p <PORT> flash monitor
 ```
 
-See [`FLASHING.md`](FLASHING.md) for per-target flash offsets and the `esptool` binary-flash procedure.
+See the [Compilation & Flashing](docs/02_COMPILATION_EN.md) guide for per-target flash offsets and the `esptool` binary-flash procedure.
 
 ### 2. Connect to ACRouter
 
@@ -168,17 +194,26 @@ Full commissioning steps are in the [documentation](#documentation).
 
 ## Documentation
 
-Full user documentation lives on the project site:
+Full user documentation lives on the project site and is mirrored in [`docs/`](docs/):
 
 **➡️ [rbdimmer.com/acrouter-what-is](https://www.rbdimmer.com/acrouter-what-is)**
 
-In this repository:
-
-| Document | Description |
-|----------|-------------|
-| [`WEB_API.md`](WEB_API.md) | REST + MQTT API contract |
-| [`FLASHING.md`](FLASHING.md) | Build & flash instructions (per target) |
-| [`CHANGELOG.md`](CHANGELOG.md) | Release history |
+| Guide | Description |
+|-------|-------------|
+| [Overview](docs/01_OVERVIEW_EN.md) | Architecture, smart modules, control loop, product kits |
+| [Hardware Guide](docs/01-1_HARDWARE_GUIDE.md) | Wiring, module placement, safety |
+| [Commissioning](docs/01-2_COMMISSIONING_EN.md) | Step-by-step first-time setup |
+| [Compilation & Flashing](docs/02_COMPILATION_EN.md) | Build from source, flash offsets, esptool |
+| [Operating Modes](docs/04_ROUTER_MODES_EN.md) | Seven modes in detail, sensor requirements |
+| [Terminal Commands](docs/07_COMMANDS_EN.md) | Serial console reference |
+| [Web API — GET](docs/08_WEB_API_GET_EN.md) | Read-only REST endpoints |
+| [Web API — POST](docs/09_WEB_API_POST_EN.md) | Control & write REST endpoints |
+| [Sensor Calibration](docs/10_SENSOR_CALIBRATION_EN.md) | CT model selection, rbAmp calibration |
+| [MQTT Guide](docs/11_MQTT_GUIDE.md) | MQTT topics, config-over-MQTT, broker setup |
+| [Home Assistant](docs/12_HOME_ASSISTANT.md) | HA auto-discovery, entities, dashboards |
+| [Glossary](docs/13_GLOSSARY_EN.md) | Terms and definitions |
+| [Roadmap](docs/ROADMAP.md) | Delivered features and planned direction |
+| [Changelog](CHANGELOG.md) | Release history |
 
 ---
 
@@ -197,7 +232,7 @@ curl -X POST http://192.168.4.1/api/mode -H 'Content-Type: application/json' -d 
 curl http://192.168.4.1/api/metrics
 ```
 
-See [`WEB_API.md`](WEB_API.md) for the full endpoint list (and the MQTT topic tree).
+See the [Web API GET](docs/08_WEB_API_GET_EN.md) and [Web API POST](docs/09_WEB_API_POST_EN.md) guides for the full endpoint list, and [MQTT Guide](docs/11_MQTT_GUIDE.md) for the topic tree.
 
 ---
 
