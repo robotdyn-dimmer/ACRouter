@@ -136,8 +136,8 @@ ACRouter ships as three kits. Each adds the sensing needed for more capable mode
 | Kit | Adds | What it does | Modes unlocked |
 |-----|------|--------------|----------------|
 | **[K0 Schedule](https://www.rbdimmer.com/shop/k0-schedule-84)** | — (dimmer only) | Scheduled or manual heating with no consumption monitoring — e.g. run during low-tariff windows | MANUAL, BOOST |
-| **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85)** | + 1× rbAmp (`grid`, voltage-capable) | The core ACRouter kit — senses import vs. export, balances P_grid → 0, caps grid draw | + GRID_LIMIT, ECO, AUTO |
-| **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86)** | + 2× rbAmp (`grid` + `solar`) | Everything K1 does, plus off-grid operation — routing from measured solar generation | + OFFGRID |
+| **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85)** | + rbAmp UI (voltage + 1 current channel: `grid`) | The core ACRouter kit — senses import vs. export, balances P_grid → 0, caps grid draw | + GRID_LIMIT, ECO, AUTO |
+| **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86)** | + rbAmp UI2 (voltage + 2 current channels: `grid` + `solar`) | Everything K1 does, plus off-grid operation — routing from measured solar generation | + OFFGRID |
 
 Start with **K1** for standard self-consumption / anti-import; choose **K2** when you also generate solar (or run off-grid); **K0** is the entry kit for simple scheduled heating without measurement.
 

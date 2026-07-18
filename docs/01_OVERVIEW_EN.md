@@ -196,8 +196,8 @@ power-rated DimmerLink dimmer with **temperature control** (load-side thermal pr
 | Kit | Adds | What it does | Modes unlocked |
 |-----|------|--------------|----------------|
 | **[K0 Schedule](https://www.rbdimmer.com/shop/k0-schedule-84)** | — (dimmer + DimmerLink only) | Scheduled or manual heating with **no consumption monitoring** — e.g. run during low-tariff windows | MANUAL, BOOST |
-| **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85)** | + 1× rbAmp (`grid`, voltage-capable) | The core ACRouter kit — its voltage-capable grid module senses **direction** (import vs. export), so it avoids paid import, balances `P_grid → 0`, and caps grid draw | + GRID_LIMIT, ECO, AUTO |
-| **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86)** | + 2× rbAmp (`grid` + `solar`) | Everything K1 does, plus a `solar` channel for **off-grid** operation — routing from measured generation, including while charging batteries | + OFFGRID |
+| **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85)** | + rbAmp UI (voltage + 1 current channel: `grid`) | The core ACRouter kit — its voltage-capable grid channel senses **direction** (import vs. export), so it avoids paid import, balances `P_grid → 0`, and caps grid draw | + GRID_LIMIT, ECO, AUTO |
+| **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86)** | + rbAmp UI2 (voltage + 2 current channels: `grid` + `solar`) | Everything K1 does, plus a `solar` channel for **off-grid** operation — routing from measured generation, including while charging batteries | + OFFGRID |
 
 Adding rbAmp channels is what unlocks the **closed-loop** modes: the **voltage-capable `grid`** channel
 enables AUTO / ECO / GRID_LIMIT (it must tell import from export), and a `solar` channel adds OFFGRID.
