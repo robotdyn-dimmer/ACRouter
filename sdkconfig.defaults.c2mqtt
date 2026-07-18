@@ -1,0 +1,16 @@
+# C2-MQTT profile (docs/18 §4) — headless MQTT-only build for the ESP32-C2.
+# Passed via SDKCONFIG_DEFAULTS in build_c2mqtt.bat AFTER sdkconfig.defaults +
+# sdkconfig.defaults.esp32c2, so it survives `idf.py set-target` (which regenerates
+# sdkconfig from the defaults layer — a plain override in sdkconfig.c2mqtt would be
+# wiped). HTTP off, MQTT on, OTA off, autodiscovery off, MQTT bootstrap on.
+# The bootstrap broker URL lives in the gitignored sdkconfig.defaults.c2mqtt.local
+# (kept out of the repo).
+
+# CONFIG_ACROUTER_HTTP_SERVER is not set
+CONFIG_ACROUTER_MQTT_CLIENT=y
+# CONFIG_ACROUTER_OTA is not set
+# CONFIG_ACROUTER_I2C_AUTODISCOVERY is not set
+CONFIG_ACROUTER_MQTT_BOOTSTRAP=y
+# ESP-NOW is ESP32-tier; the C2 uses wired DimmerLink-I2C (tiering). Force it off so a
+# stale generated sdkconfig can't leave it on (which surfaced a phantom ESP-NOW dimmer).
+# CONFIG_ACROUTER_ESPNOW_SOURCE is not set

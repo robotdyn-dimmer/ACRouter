@@ -1,0 +1,7 @@
+## rbAmp ESP-IDF client library (v2.0 sensing offload).
+## Published on GitHub (not the ESP Component Registry) — pull via git @ tag.
+## See github.com/rb-amp/rbamp-esp-idf
+dependencies:
+  rbamp:
+    git: https://github.com/rb-amp/rbamp-esp-idf.git
+    version: "v1.3.0"

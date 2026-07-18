@@ -1,0 +1,18 @@
+idf_component_register(
+    SRCS
+        "src/rbamp_source.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        i2c_bus
+        event_bus
+        driver
+    PRIV_REQUIRES
+        rbamp
+        esp_event
+        esp_timer
+        esp_system
+        nvs_flash
+        freertos
+        log
+)

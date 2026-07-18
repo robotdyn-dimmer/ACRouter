@@ -1,0 +1,16 @@
+## IDF Component Manager Manifest File
+## Dependencies for AC Power Router Controller
+
+dependencies:
+  ## Arduino Core 3.x for ESP32
+  espressif/arduino-esp32:
+    version: "^3.0.0"
+
+  ## ArduinoJson v7
+  ## JSON serialization library
+  bblanchon/arduinojson:
+    version: "^7.0.0"
+
+  ## IDF built-in components (automatically included)
+  idf:
+    version: ">=5.0.0"

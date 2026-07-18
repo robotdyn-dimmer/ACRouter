@@ -1,0 +1,100 @@
+# ESP-IDF Build files
+build/
+sdkconfig
+sdkconfig.old
+*.bin
+*.elf
+*.map
+
+# Managed Components (downloaded automatically)
+managed_components/
+dependencies.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IDE
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+*.o
+*.a
+*.d
+*.lst
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+NUL
+
+# Certificate and key files
+*.pem
+*.key
+*.crt
+
+# Local configuration
+sdkconfig.local
+local.env
+
+# Documentation (managed separately on GitHub)
+docs/
+specification/
+README.md
+*.md
+
+# Developer release guide (internal only)
+RELEASE_GUIDE.txt
+
+# Developer scripts (not for public repository)
+release.bat
+release.sh
+build.bat
+build.sh
+
+# Local build helpers (machine-specific paths)
+build_*.bat
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Tool caches & local junk
+.cache/
+_backup_debug/
+
+# npm lock (project uses pnpm — pnpm-lock.yaml is the lockfile)
+package-lock.json
+
+# Local orchestration config (root + per-session overlay)
+**/.mcp.json
+
+# Design mockups (local scratch; track deliberately if needed)
+mockups/build_c2/
+sdkconfig.c2
+sdkconfig.c2.old
+sdkconfig.c2mqtt
+sdkconfig.defaults.c2mqtt.local

@@ -1,0 +1,16 @@
+idf_component_register(
+    SRCS
+        "src/esp_now_source.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        event_bus
+    PRIV_REQUIRES
+        esp_wifi
+        esp_netif
+        esp_event
+        esp_timer
+        nvs_flash
+        freertos
+        log
+)

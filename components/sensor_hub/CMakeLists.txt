@@ -1,0 +1,11 @@
+idf_component_register(
+    SRCS
+        "src/sensor_hub.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        event_bus
+        esp_event
+        esp_timer
+        freertos
+)

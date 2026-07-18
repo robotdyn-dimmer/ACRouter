@@ -1,0 +1,80 @@
+menu "ACRouter interfaces (C2/ESP32 tiering)"
+
+# See docs/18_C2_ESP32_TIERING_PLAN.md. These gate the two remote interfaces at
+# compile time so a build links only what it runs. Both default to y here (preserves
+# the current behavior); the C2 profiles flip them — C2-HTTP: MQTT off, C2-MQTT: HTTP
+# off (C2 runs EXACTLY ONE interface). ESP32 keeps both.
+
+config ACROUTER_HTTP_SERVER
+    bool "Enable on-device HTTP server + REST/WS API"
+    default y
+    help
+        The device's HTTP/REST + WebSocket API that the external web app talks to.
+        Disable for a headless MQTT-only build (e.g. the C2-MQTT profile), which is
+        provisioned over MQTT instead of a local web UI.
+
+config ACROUTER_MQTT_CLIENT
+    bool "Enable MQTT client (telemetry + Home Assistant)"
+    default n if IDF_TARGET_ESP32C2
+    default y
+    help
+        The MQTT client: telemetry publish, Home Assistant auto-discovery, and inbound
+        command intake.
+
+        WARNING: heavy on the RAM-limited ESP32-C2 — esp-mqtt pulls in the TLS
+        transport (mbedTLS), a large heap/flash consumer. On the C2 run EITHER HTTP or
+        MQTT, never both. On ESP32 both run concurrently (ample RAM + a second core).
+
+        DEFAULT OFF on the ESP32-C2 (the C2-HTTP profile): empirically, both interfaces
+        + the isolated control task overflow the C2 heap and starve WiFi. Enable it only
+        for a C2-MQTT (HTTP-off) build, and disable ACROUTER_HTTP_SERVER there.
+
+config ACROUTER_OTA
+    bool "Enable OTA firmware update (local upload + GitHub check)"
+    default n if IDF_TARGET_ESP32C2
+    default y
+    help
+        On-device firmware update: local HTTP upload + the GitHub update check.
+
+        DEFAULT OFF on the ESP32-C2 (docs/18 §4): the C2 updates via manual UART flash,
+        which also lets the partition table drop the ota_0/ota_1/otadata slots and give
+        the app ~2x the space. Reported as features.ota in /api/info so the web client
+        hides the OTA page when this build has no OTA.
+
+config ACROUTER_MQTT_BOOTSTRAP
+    bool "MQTT bootstrap: seed broker + enable when NVS is unconfigured"
+    depends on ACROUTER_MQTT_CLIENT
+    default n
+    help
+        For the headless C2-MQTT profile: if NVS has no broker (fresh device, or a
+        board provisioned under a non-MQTT profile), seed ACROUTER_MQTT_BOOTSTRAP_BROKER
+        and enable MQTT so the device reaches the broker on first boot — there is no
+        HTTP UI to configure it. NVS always wins when it carries a broker (e.g. a later
+        config/set over MQTT persists and overrides). If both NVS and the bootstrap
+        broker are empty, MQTT stays disabled (safe-idle). docs/18 §5.
+
+config ACROUTER_MQTT_BOOTSTRAP_BROKER
+    string "Bootstrap broker URL (mqtt://host:port)"
+    depends on ACROUTER_MQTT_BOOTSTRAP
+    default ""
+    help
+        Set this in the gitignored sdkconfig.c2mqtt so no LAN broker address is
+        committed to the repo. Empty -> bootstrap is a no-op (safe-idle).
+
+config ACROUTER_I2C_AUTODISCOVERY
+    bool "Enable on-demand I2C bus rescan (hot-add modules at runtime)"
+    default n if IDF_TARGET_ESP32C2
+    default y
+    help
+        On-demand rescan of the I2C bus for newly-attached rbAmp/DimmerLink modules,
+        triggered from the web UI or the serial console. The rescan pauses the ~5 Hz poll
+        and re-probes the bus.
+
+        DEFAULT OFF on the ESP32-C2 (docs/18): the pause+reprobe contends with the control
+        loop and the single-core web/MQTT stack — empirically it stalls the C2 web server.
+        The fleet is still established once at boot from the modules present on the bus
+        (that boot scan is retained); only the runtime rescan is disabled. When off,
+        rbamp_source_rescan() returns ESP_ERR_NOT_SUPPORTED and the /api rescan endpoint
+        reports {success:false}. On ESP32 (dual-core, ample RAM) it stays on.
+
+endmenu

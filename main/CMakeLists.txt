@@ -1,0 +1,30 @@
+idf_component_register(
+    SRCS
+        "main.cpp"
+        "system_init.cpp"
+        "system_loop.cpp"
+    INCLUDE_DIRS "."
+    REQUIRES
+        nvs_flash
+        driver
+        hal
+        esp_hw_support
+        esp_app_format
+        log
+        esp_wifi
+        # Our custom components
+        acrouter_hal
+        utils
+        comm
+        dimmer
+        relay
+        event_bus
+        i2c_bus
+        device_registry
+        dimmerlink
+        sensor_hub
+        rbamp_source
+        esp_now_source
+    PRIV_REQUIRES
+        espressif__arduino-esp32
+)

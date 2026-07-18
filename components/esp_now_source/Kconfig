@@ -1,0 +1,35 @@
+menu "ACRouter ESP-NOW Source (v2.0 wireless)"
+
+config ACROUTER_ESPNOW_SOURCE
+    bool "Enable ESP-NOW wireless measurement source"
+    # ESP-NOW is an ESP32-tier feature only: default ON for the ESP32 full build,
+    # OFF for every other target (ESP32-C2 uses wired DimmerLink-I2C, not ESP-NOW).
+    # Encoding the policy here (not just in a defaults layer) makes it robust to a
+    # stale generated sdkconfig flipping it on for the C2 (operator decision 2026-07-17).
+    default y if IDF_TARGET_ESP32
+    default n
+    help
+        Receive rbAmp measurements from wireless nodes over ESP-NOW (rbgrid wire
+        protocol) and feed them into the Sensor Hub as ACROUTER_SOURCE_ESPNOW
+        events (priority 0), the same merge path the internal ADC and rbAmp I2C
+        sources use.
+
+        Minimal scope: RX rbAmp REALTIME only, open (unencrypted) bring-up. No
+        master/PTP time-sync, no period/billing. Dimmer control TX to nodes is a
+        later addition. Safe to enable with no node present.
+
+if ACROUTER_ESPNOW_SOURCE
+
+config ACROUTER_ESPNOW_CHANNEL
+    int "Force WiFi/ESP-NOW channel (0 = keep current)"
+    default 0
+    range 0 13
+    help
+        ESP-NOW peers must share one WiFi channel. 0 = use ACRouter's current
+        WiFi channel (AP channel, or the router's channel in STA mode) and have
+        the node match it. Set >0 only if you need to pin a specific channel
+        (may disrupt an STA uplink).
+
+endif
+
+endmenu

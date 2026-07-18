@@ -1,0 +1,15 @@
+idf_component_register(
+    SRCS
+        "src/dimmerlink_device.c"
+        "src/dimmerlink_manager.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        i2c_bus
+        event_bus
+        esp_event
+        esp_timer
+        esp_system
+        freertos
+        nvs_flash
+)

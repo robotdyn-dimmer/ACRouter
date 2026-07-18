@@ -1,0 +1,76 @@
+menu "ACRouter rbAmp Source (v2.0 sensing)"
+
+config ACROUTER_RBAMP_SOURCE
+    bool "Enable rbAmp I2C sensor source"
+    default n
+    help
+        Poll rbAmp sensor modules over the shared I2C bus and feed their
+        measurements into the Sensor Hub as an ACROUTER_SOURCE_I2C source
+        (priority 0, preferred over the internal ADC).
+
+        This is the v2.0 sensing-offload path: rbAmp modules do the
+        current/voltage/power DSP on-device (5 Hz commit), so the ESP32 no
+        longer needs local ADC sampling. Additive — runs alongside the
+        internal ADC source until ADC is removed in a later phase.
+
+        Safe to enable with no modules present: discovery finds nothing and
+        the poll task posts nothing. Requires rbAmp hardware to produce data.
+
+if ACROUTER_RBAMP_SOURCE
+
+config ACROUTER_RBAMP_POLL_MS
+    int "rbAmp poll interval (ms)"
+    default 200
+    range 100 5000
+    help
+        Fleet poll cadence. rbAmp commits RMS metrics every 200 ms (5 Hz,
+        hard floor); polling faster than 200 ms yields no fresher data.
+
+comment "Module role mapping (0x00 = unset). Assigns a discovered module's primary channel to a Sensor Hub slot."
+
+config ACROUTER_RBAMP_GRID_ADDR
+    hex "Grid rbAmp module I2C address"
+    default 0x00
+    help
+        7-bit address of the rbAmp module measuring the GRID feed. 0 = none.
+
+config ACROUTER_RBAMP_SOLAR_ADDR
+    hex "Solar rbAmp module I2C address"
+    default 0x00
+    help
+        7-bit address of the rbAmp module measuring the SOLAR feed. 0 = none.
+
+config ACROUTER_RBAMP_LOAD_ADDR
+    hex "Load rbAmp module I2C address"
+    default 0x00
+    help
+        7-bit address of the rbAmp module measuring the LOAD feed. 0 = none.
+
+config ACROUTER_RBAMP_VOLTAGE_ADDR
+    hex "Dedicated voltage rbAmp module I2C address"
+    default 0x00
+    help
+        7-bit address of a voltage-only rbAmp module. 0 = none (grid module's
+        voltage is used when it has voltage hardware).
+
+config ACROUTER_RBAMP_AUTOSCAN
+    bool "Auto-discover rbAmp modules at init"
+    default y
+    help
+        Scan the bus for rbAmp modules (by PRODUCT_ID) at init and add them
+        to the fleet. Discovered modules are polled and logged (diagnostic);
+        assign a Sensor Hub role per module via rbamp_source_configure() to
+        feed the routing control loop.
+
+config ACROUTER_RBAMP_TASK_WDT
+    bool "Subscribe poll task to Task Watchdog"
+    default y
+    help
+        A wedged I2C bus can block the IDF i2c_master driver indefinitely
+        (the library cannot interrupt a blocking same-task call). Subscribing
+        the poll task to the Task WDT auto-reboots cleanly out of a wedge.
+        Recommended for production (rbAmp fleet guidance).
+
+endif
+
+endmenu

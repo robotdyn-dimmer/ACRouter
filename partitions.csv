@@ -1,0 +1,15 @@
+# ESP32 Partition Table for AC Power Router Controller with OTA
+# Flash Size: 4MB
+#
+# Name,     Type, SubType,  Offset,   Size,     Flags
+# NVS partition for configuration storage
+nvs,        data, nvs,      0x9000,   0x6000,
+# OTA data partition (stores current OTA app)
+otadata,    data, ota,      0xf000,   0x2000,
+# OTA app partition 0 (first firmware slot)
+app0,       app,  ota_0,    0x20000,  0x190000,
+# OTA app partition 1 (second firmware slot)
+app1,       app,  ota_1,    0x1B0000, 0x190000,
+# NOTE: the web application is hosted EXTERNALLY (device redirects / to it) — the
+# firmware does NOT store or serve the UI. No SPIFFS/web-UI partition on the device.
+# The 0x340000..0x400000 region (768 KB) is intentionally left unpartitioned.

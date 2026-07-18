@@ -1,0 +1,34 @@
+# ESP32-C2 (ESP8684) overrides — single-core RISC-V, applied on top of
+# sdkconfig.defaults for `idf.py set-target esp32c2`. The shared defaults carry
+# ESP32 dual-core assumptions that are invalid here; override them.
+
+# Single core: Arduino task + event loop must run on core 0 (no APP_CPU).
+CONFIG_ARDUINO_RUNNING_CORE=0
+CONFIG_ARDUINO_EVENT_RUNNING_CORE=0
+
+# CPU: C2 tops out at 120 MHz (not 240).
+# CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240 is not set
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_120=y
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ=120
+
+# Crystal: this board (ESP8684H / WROOM-02C) uses a 26 MHz crystal. IDF 5.5
+# esp32c2 has no autodetect choice, so pin it — otherwise the default 40 MHz
+# skews every clock and the UART console prints garbage (115200*26/40=74880).
+CONFIG_XTAL_FREQ_26=y
+
+# esp_timer: no APP_CPU on unicore — the CPU1 ISR affinity from the shared
+# defaults is invalid here; pin the ISR to CPU0.
+# CONFIG_ESP_TIMER_ISR_AFFINITY_CPU1 is not set
+CONFIG_ESP_TIMER_ISR_AFFINITY_CPU0=y
+
+# Flash size is inherited (4MB) from sdkconfig.defaults; this board reports 4MB.
+
+# rbAmp source (bench bring-up): poll the fleet + seed 0x50 as GRID (UI1 module)
+CONFIG_ACROUTER_RBAMP_SOURCE=y
+CONFIG_ACROUTER_RBAMP_GRID_ADDR=0x51
+
+# ESP-NOW is ESP32-tier ONLY (operator decision 2026-07-17): the C2 uses wired
+# DimmerLink-I2C, not ESP-NOW. Kept off for every C2 profile — the Kconfig
+# `default y if IDF_TARGET_ESP32 / default n` also enforces this so a stale
+# generated sdkconfig cannot flip it back on. (Supersedes the earlier C2-as-hub design.)
+# CONFIG_ACROUTER_ESPNOW_SOURCE is not set
