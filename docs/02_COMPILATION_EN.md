@@ -2,6 +2,11 @@
 
 # Compilation
 
+> **Just want to flash?** Pre-built firmware binaries for all three profiles are available on
+> [GitHub Releases](https://github.com/robotdyn-dimmer/ACRouter/releases/tag/v2.0.0) — download the
+> zip, flash with `esptool`, and skip to the [flash commands](#27-flash) below. Build from source only
+> if you need to modify the firmware.
+
 ACRouter v2.0 builds with **ESP-IDF 5.5** using `idf.py`. It runs on **two targets** and ships in one
 of **three compile profiles** — pick the one that matches your chip and how you want to control the
 device.

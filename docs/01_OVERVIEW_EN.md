@@ -23,7 +23,7 @@ balance between production and consumption — to maximize solar self-consumptio
 - ✅ Smart plug-and-measure modules (rbAmp / DimmerLink) — factory-calibrated, no ADC tuning
 - ✅ Runs on ESP32 and low-cost ESP32-C2
 - ✅ External web app, REST API, MQTT + Home Assistant, OTA
-- ✅ Fully open source
+- ✅ Fully open source — [source code & firmware on GitHub](https://github.com/robotdyn-dimmer/ACRouter); [pre-built binaries](https://github.com/robotdyn-dimmer/ACRouter/releases/tag/v2.0.0) for ESP32, C2-HTTP, and C2-MQTT
 
 ---
 

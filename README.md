@@ -172,7 +172,15 @@ Additional settings pages cover WiFi, MQTT broker, NTP/timezone, OTA updates, an
 
 ### 1. Flash the firmware
 
-Pre-built per-target binaries are published on [GitHub Releases](https://github.com/robotdyn-dimmer/ACRouter/releases) (coming with the 2.0 release). To build and flash from source:
+Pre-built firmware binaries for all three profiles are available on [GitHub Releases](https://github.com/robotdyn-dimmer/ACRouter/releases/tag/v2.0.0):
+
+| Profile | Target | Download |
+|---------|--------|----------|
+| **ESP32 Full** | ESP32 | [ACRouter-v2.0.0-esp32-full.zip](https://github.com/robotdyn-dimmer/ACRouter/releases/download/v2.0.0/ACRouter-v2.0.0-esp32-full.zip) |
+| **C2-HTTP** | ESP32-C2 | [ACRouter-v2.0.0-c2-http.zip](https://github.com/robotdyn-dimmer/ACRouter/releases/download/v2.0.0/ACRouter-v2.0.0-c2-http.zip) |
+| **C2-MQTT** | ESP32-C2 | [ACRouter-v2.0.0-c2-mqtt.zip](https://github.com/robotdyn-dimmer/ACRouter/releases/download/v2.0.0/ACRouter-v2.0.0-c2-mqtt.zip) |
+
+Each zip contains a 4-file set + flash offset instructions. To build from source instead:
 
 ```bash
 git clone --recursive https://github.com/robotdyn-dimmer/ACRouter.git
