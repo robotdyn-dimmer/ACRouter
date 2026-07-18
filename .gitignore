@@ -60,7 +60,7 @@ sdkconfig.local
 local.env
 
 # Documentation (managed separately on GitHub)
-docs/
+# docs/  # v2.0: docs are tracked (EN public documentation)
 specification/
 README.md
 *.md
