@@ -199,6 +199,15 @@ power-rated DimmerLink dimmer with **temperature control** (load-side thermal pr
 | **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85)** | + rbAmp UI (voltage + 1 current channel: `grid`) | The core ACRouter kit — its voltage-capable grid channel senses **direction** (import vs. export), so it avoids paid import, balances `P_grid → 0`, and caps grid draw | + GRID_LIMIT, ECO, AUTO |
 | **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86)** | + rbAmp UI2 (voltage + 2 current channels: `grid` + `solar`) | Everything K1 does, plus a `solar` channel for **off-grid** operation — routing from measured generation, including while charging batteries | + OFFGRID |
 
+**K0 Schedule** — ESP32 host + DimmerLink dimmer, no measurement:
+![K0 Schedule — use-case diagram](_media/acr-hardware-diagram/ACRouterV2-K0-usecase.png)
+
+**K1 Grid Limit** — adds rbAmp UI (1 current channel on the grid feed):
+![K1 Grid Limit — use-case diagram](_media/acr-hardware-diagram/ACRouterV2-K1-usecase.png)
+
+**K2 Grid-Solar Balance** — rbAmp UI2 (2 current channels: grid + solar):
+![K2 Grid-Solar Balance — use-case diagram](_media/acr-hardware-diagram/ACRouterV2-K2-usecase.png)
+
 Adding rbAmp channels is what unlocks the **closed-loop** modes: the **voltage-capable `grid`** channel
 enables AUTO / ECO / GRID_LIMIT (it must tell import from export), and a `solar` channel adds OFFGRID.
 Start with **K1** for standard self-consumption / anti-import; choose **K2** when you also generate solar
