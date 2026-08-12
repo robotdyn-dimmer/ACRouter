@@ -242,7 +242,7 @@ alongside live conductors.
 
 - **rbAmp** modules are **fully galvanically isolated** (isolation withstand up to **3000 V**) between the
   mains measurement side and the 3V3/I2C logic side — so a **USB connection to the host while the modules
-  are mains-powered is safe**. See **[rbamp.com](https://rbamp.com)** for isolation details.
+  are mains-powered is safe**. See **[rbamp.com](https://rbamp.com/?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** for isolation details.
 - 🔴 **DimmerLink** — treat as **non-isolated** unless its own datasheet states otherwise. **Do not
   connect USB/UART to the host while a DimmerLink is under mains.** The DimmerLink's power stage can be
   live-referenced; power the whole build down before plugging in a PC.

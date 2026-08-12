@@ -238,9 +238,9 @@ kit includes a temperature-controlled DimmerLink; the rbAmp channels are what ad
 
 | Kit | rbAmp channels | Modes available |
 |-----|----------------|-----------------|
-| **[K0 Schedule](https://www.rbdimmer.com/shop/k0-schedule-84)** | none | OFF, MANUAL, BOOST (open-loop — no grid/solar sensing) |
-| **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85)** | `grid` (voltage-capable) | + GRID_LIMIT, ECO, AUTO |
-| **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86)** | `grid` + `solar` | + OFFGRID |
+| **[K0 Schedule](https://www.rbdimmer.com/shop/k0-schedule-84?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** | none | OFF, MANUAL, BOOST (open-loop — no grid/solar sensing) |
+| **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** | `grid` (voltage-capable) | + GRID_LIMIT, ECO, AUTO |
+| **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** | `grid` + `solar` | + OFFGRID |
 
 Both **K1** and **K2** ship a **voltage-capable** `grid` module, so both do AUTO / ECO / GRID_LIMIT (AUTO
 and ECO act on *signed* power — import vs. export — while GRID_LIMIT needs only grid current). **K2** adds

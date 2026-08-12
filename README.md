@@ -93,7 +93,7 @@ ACRouter runs on **ESP32** and **ESP32-C2 (ESP8684)** host boards and talks to s
 | **DimmerLink module** | Phase-cut AC dimmer, I2C slave (default address `0x50`) |
 | **ESP-NOW nodes** *(optional, ESP32-tier)* | Wireless sensor / output nodes |
 
-> 💡 ACRouter is designed to work with hardware from [rbdimmer.com](https://rbdimmer.com) and any open-source DIY modules that speak the same protocols.
+> 💡 ACRouter is designed to work with hardware from [rbdimmer.com](https://rbdimmer.com/?utm_source=github&utm_medium=referral&utm_campaign=acrouter) and any open-source DIY modules that speak the same protocols.
 
 ### CT models
 
@@ -135,9 +135,9 @@ ACRouter ships as three kits. Each adds the sensing needed for more capable mode
 
 | Kit | Adds | What it does | Modes unlocked |
 |-----|------|--------------|----------------|
-| **[K0 Schedule](https://www.rbdimmer.com/shop/k0-schedule-84)** | — (dimmer only) | Scheduled or manual heating with no consumption monitoring — e.g. run during low-tariff windows | MANUAL, BOOST |
-| **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85)** | + rbAmp UI (voltage + 1 current channel: `grid`) | The core ACRouter kit — senses import vs. export, balances P_grid → 0, caps grid draw | + GRID_LIMIT, ECO, AUTO |
-| **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86)** | + rbAmp UI2 (voltage + 2 current channels: `grid` + `solar`) | Everything K1 does, plus off-grid operation — routing from measured solar generation | + OFFGRID |
+| **[K0 Schedule](https://www.rbdimmer.com/shop/k0-schedule-84?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** | — (dimmer only) | Scheduled or manual heating with no consumption monitoring — e.g. run during low-tariff windows | MANUAL, BOOST |
+| **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** | + rbAmp UI (voltage + 1 current channel: `grid`) | The core ACRouter kit — senses import vs. export, balances P_grid → 0, caps grid draw | + GRID_LIMIT, ECO, AUTO |
+| **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** | + rbAmp UI2 (voltage + 2 current channels: `grid` + `solar`) | Everything K1 does, plus off-grid operation — routing from measured solar generation | + OFFGRID |
 
 Start with **K1** for standard self-consumption / anti-import; choose **K2** when you also generate solar (or run off-grid); **K0** is the entry kit for simple scheduled heating without measurement.
 
@@ -218,7 +218,7 @@ Full commissioning steps are in the [documentation](#documentation).
 
 Full user documentation lives on the project site and is mirrored in [`docs/`](docs/):
 
-**➡️ [rbdimmer.com/acrouter-what-is](https://www.rbdimmer.com/acrouter-what-is)**
+**➡️ [rbdimmer.com/acrouter-what-is](https://www.rbdimmer.com/acrouter-what-is?utm_source=github&utm_medium=referral&utm_campaign=acrouter)**
 
 | Guide | Description |
 |-------|-------------|
