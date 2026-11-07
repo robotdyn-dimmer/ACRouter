@@ -21,6 +21,7 @@ automatically, no YAML.
 ## 12.2 Registered Entities
 
 
+
 ![Discovery creates one 'ACRouter Solar' device with sensors, a mode select, number controls, buttons, and one switch per relay.](_media/acr-ha-entity-map/out/acr-ha-entity-map.png)
 
 *Discovery creates one 'ACRouter Solar' device with sensors, a mode select, number controls, buttons, and one switch per relay.*

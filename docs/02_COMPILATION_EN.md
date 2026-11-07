@@ -57,7 +57,7 @@ Each build carries exactly one **compile profile**. This is what differs between
 |------------|:----------:|:-------:|:-------:|
 | **HTTP/REST API + external web app** | ✅ | ✅ | ❌ *(headless)* |
 | **MQTT client** | ✅ | ❌ | ✅ |
-| **Home Assistant** (needs MQTT) | ✅ | ❌ | ✅ |
+| **[Home Assistant](https://www.rbdimmer.com/acrouter-home-assistant-integration)** (needs MQTT) | ✅ | ❌ | ✅ |
 | **config-over-MQTT** | ✅ | ❌ | ✅ *(primary setup path)* |
 | **OTA** (over-the-air update) | ✅ | ❌ *(serial flash)* | ❌ *(serial flash)* |
 | **TLS** | ✅ | ❌ | ❌ |
@@ -65,6 +65,7 @@ Each build carries exactly one **compile profile**. This is what differs between
 | CPU | dual-core | single-core | single-core |
 | RAM | full | ~272 KB | ~272 KB |
 | First-time setup | web app or serial | web app or serial | **serial bootstrap** (WiFi + broker) |
+
 
 
 ![One firmware, three profiles: the ESP32 carries every interface; each ESP32-C2 build carries exactly one remote interface to fit its RAM.](_media/acr-capability-matrix/out/acr-capability-matrix.png)
@@ -78,7 +79,7 @@ Each build carries exactly one **compile profile**. This is what differs between
 relays (ids 0–3), and the serial console. The external web app works on any **HTTP-capable** build (ESP32
 full, C2-HTTP); gate features on `GET /api/info` → `features`, never on the chip name (§2.5).
 
-> 🔴 **Why the tiering?** The ESP32-C2 has ~272 KB RAM — not enough to hold HTTP + MQTT + TLS at once.
+> **Why the tiering?** The ESP32-C2 has ~272 KB RAM — not enough to hold HTTP + MQTT + TLS at once.
 > So a C2 build carries **exactly one** remote interface (**HTTP xor MQTT**), chosen at compile time.
 > The ESP32 has the headroom to carry both. On **C2-MQTT there is no HTTP server at all** — the device
 > is reached only through the broker.
@@ -101,7 +102,7 @@ The default C2 profile is **C2-HTTP** — HTTP on, MQTT and OTA off. The exact p
 defaults live in the repo's `sdkconfig` / `sdkconfig.defaults*` files; treat those as the source of
 truth (the C2-MQTT profile flips HTTP off and MQTT on via its own defaults layer, below).
 
-> 🔴 **Gotcha — keep profile flags in an `sdkconfig.defaults` layer, not in a hand-edited `sdkconfig`.**
+> **Gotcha — keep profile flags in an `sdkconfig.defaults` layer, not in a hand-edited `sdkconfig`.**
 > `idf.py set-target` **regenerates** `sdkconfig` from the defaults and discards manual edits. That is
 > exactly why the headless profile ships as a separate `sdkconfig.defaults.c2mqtt` layer.
 

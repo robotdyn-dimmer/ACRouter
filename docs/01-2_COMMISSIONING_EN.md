@@ -16,6 +16,7 @@ directly.
 > the [MQTT Guide](https://www.rbdimmer.com/acrouter-mqtt-guide)).
 
 
+
 ![The bring-up path: WiFi → discover → assign roles → CT model → verify grid sign → start AUTO.](_media/acr-commissioning-flow/out/acr-commissioning-flow.png)
 
 *The bring-up path: WiFi → discover → assign roles → CT model → verify grid sign → start AUTO.*
@@ -70,6 +71,7 @@ bus can see the modules.
 ## Step 1 — Discover (rescan)
 
 
+
 ![After a rescan, the Modules page lists the discovered rbAmp and DimmerLink with their addresses and roles.](_media/acr-ss-modules-discover/out/acr-ss-modules-discover.final.png)
 
 *After a rescan, the Modules page lists the discovered rbAmp and DimmerLink with their addresses and roles.*
@@ -84,6 +86,7 @@ channels, current `roles[]`, and `valid_roles[]` (the only roles allowed for tha
 exactly these).
 
 ## Step 2 — Assign Roles (per channel)
+
 
 
 ![Roles are assigned per channel on the Sensors tab — start with grid on a voltage-capable rbAmp.](_media/acr-ss-assign-role/out/acr-ss-assign-role.final.png)
@@ -108,6 +111,7 @@ wired, and `dimmer` for the DimmerLink.
 > changes apply live.
 
 ## Step 3 — Set the CT Model (per rbAmp channel)
+
 
 
 ![Select the CT model matching your clamp — this overwrites the factory gain, so set it once.](_media/acr-ss-ct-model/out/acr-ss-ct-model.final.png)
@@ -135,7 +139,7 @@ POST /api/rbamp/modules/address
 Two-phase commit; the new address **applies after the module resets**. Run a rescan afterwards — the
 module re-appears at the new address and its role mapping migrates automatically.
 
-> 🔴 **Address two same-address modules one at a time.** Two modules at the same factory address both
+> **Address two same-address modules one at a time.** Two modules at the same factory address both
 > answer on it, so you can't target one to re-address it. Connect them to the bus **one at a time** for
 > the initial re-addressing, then bring the rest online.
 
@@ -147,6 +151,7 @@ module re-appears at the new address and its role mapping migrates automatically
 ## Step 6 — Verify Sensing
 
 
+
 ![Confirm the grid direction under a known load — it must read 'Importing from grid' — before you enable AUTO.](_media/acr-ss-verify-sign/out/acr-ss-verify-sign.final.png)
 
 *Confirm the grid direction under a known load — it must read 'Importing from grid' — before you enable AUTO.*
@@ -154,7 +159,7 @@ module re-appears at the new address and its role mapping migrates automatically
 Read `GET /api/sensors` (per-source live V/I/P/PF/frequency + role) or `GET /api/metrics` (merged
 `power_grid` / `power_solar` / `power_load`).
 
-> 🔴 **Check the grid sign under a known load.** `power_grid` must read **+** when importing and **−**
+> ⚠️ **Check the grid sign under a known load.** `power_grid` must read **+** when importing and **−**
 > when exporting. If the sign or direction is wrong, the grid channel isn't voltage-capable, or the CT
 > model / clamp polarity is off.
 

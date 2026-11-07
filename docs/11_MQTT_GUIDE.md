@@ -33,6 +33,7 @@ Check status with `mqtt-status` or `GET /api/mqtt/status`.
 ## 11.2 Telemetry Topics
 
 
+
 ![Everything lives under acrouter/<device_id>: metrics and JSON are telemetry, config/ configures, command/ controls (never retained).](_media/acr-mqtt-topic-tree/out/acr-mqtt-topic-tree.png)
 
 *Everything lives under acrouter/<device_id>: metrics and JSON are telemetry, config/ configures, command/ controls (never retained).*
@@ -57,8 +58,9 @@ Check status with `mqtt-status` or `GET /api/mqtt/status`.
 `…/status/mode`, `…/status/state`, `…/status/dimmer`, `…/status/wifi_rssi`;
 `…/status/dimmer/<id>` (+ `/state` ON/OFF, `/priority`); `…/status/relay/<id>` (+ `/priority`).
 
-> 🔴 The per-entity scalar topics are published **only when Home Assistant discovery is enabled**
-> (`mqtt-ha-discovery 1`) — otherwise the retained QoS-1 burst can overload the C2's limited network
+> The per-entity scalar topics are published **only when Home Assistant discovery is enabled**
+> (`mqtt-ha-discovery 1`, see [Home Assistant Integration](https://www.rbdimmer.com/acrouter-home-assistant-integration))
+> — otherwise the retained QoS-1 burst can overload the C2's limited network
 > stack. For a dashboard or a third-party client, subscribe to **`…/json/*`** and **`…/metrics/*`** instead.
 
 ## 11.3 Config over MQTT
@@ -87,7 +89,7 @@ Example (valid JSON):
 > are **silently ignored**. So the blob does **not** configure WiFi or the broker (see the bootstrap note
 > in [§11.6](#116-headless-c2-mqtt)). Values under `control` are **range-clamped** to the same limits as
 > the REST API (control_gain 10–1000, balance_threshold 0–100, grid_current_limit 0–100).
-> 🔴 **Same parameter, two key names:** the GRID_LIMIT cap is **`grid_current_limit`** in the REST API
+> **Same parameter, two key names:** the GRID_LIMIT cap is **`grid_current_limit`** in the REST API
 > (`/api/config`) but **`grid_current_limit_a`** here in MQTT (`config/set` blob and `config/state`).
 > Default 16.0 A, range 0–100. It is the **only** way to set the cap over MQTT — there is no
 > `config/grid_current_limit/set` per-value topic.
@@ -125,7 +127,7 @@ Publish to `acrouter/<device_id>/command/…`. **Payloads are raw strings/number
 | `…/command/emergency_stop` | any | Emergency stop |
 | `…/command/refresh` | any | Republish everything |
 
-> 🔴 **Per-dimmer command topics** `…/command/dimmer/<id>` (and `/brightness`) currently address only
+> **Per-dimmer command topics** `…/command/dimmer/<id>` (and `/brightness`) currently address only
 > the legacy GPIO range (ids 0–3) — **DimmerLink dimmers (id 4+) are not reachable through them yet** (a
 > fix is in progress). For headless control today, drive the load through the router **mode**
 > (`…/command/mode`) and provision with `config/set`. Mode and relay control over MQTT work fully.
@@ -134,7 +136,7 @@ Publish to `acrouter/<device_id>/command/…`. **Payloads are raw strings/number
 > There is no REST equivalent; the serial equivalent is `router-mode off` (OFF also clears all dimmers
 > and relays).
 
-> 🔴 **Never publish command topics with `retain=1`.** A retained `command/reboot` or `command/mode`
+> ⚠️ **Never publish command topics with `retain=1`.** A retained `command/reboot` or `command/mode`
 > would be re-delivered every time the device (re)connects — potentially a boot loop. Publish all
 > `command/*` with **retain=0**.
 

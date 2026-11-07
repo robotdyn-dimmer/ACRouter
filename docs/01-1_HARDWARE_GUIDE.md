@@ -10,9 +10,8 @@
 
 > ## ⚠️ DANGER — Mains Voltage
 > **AC mains (110 V / 230 V) can cause serious injury or death.** ACRouter modules sit on the
-> mains side. **De-energize the circuit before wiring**, keep the low-voltage I2C wiring
-> (SDA/SCL/3V3/GND) physically isolated from the mains section, and have mains work done by
-> **qualified personnel**. Full safety requirements: [§1.7 Safety](#17-safety) — read it before you build.
+> mains side. **Any work in the electrical panel must be carried out by a qualified electrician.**
+> See [§1.7 Safety](#17-safety) before you build.
 
 ## 1.1 Architecture at a Glance
 
@@ -105,7 +104,7 @@ The rbAmp module measures AC current with a **clamp-on current transformer (CT)*
 around a conductor, it is **not** wired in-line — and (on a voltage-capable module) line voltage, and
 reports over I2C.
 
-> 🔴 **One rbAmp per measured feed.** In practice each rbAmp provides **one** measurement — you use a
+> **One rbAmp per measured feed.** In practice each rbAmp provides **one** measurement — you use a
 > **separate module per current** you want to sense: one for **grid** (CT around the mains-supply
 > conductor), one for **solar** (CT around the solar/inverter line), and one for **load** (CT around the
 > diverted-load line), each at its **own I2C address**. Assign one role per module. A minimum solar
@@ -115,7 +114,7 @@ reports over I2C.
   default). Each module needs a unique address. Re-address with the `rbamp-address` serial command or
   `POST /api/rbamp/modules/address` (verify-then-set; the new address applies after a module reset).
 - **Roles:** assign each module one of `grid`, `solar`, `load`, or `voltage`.
-  - 🔴 **A `grid` module is mandatory**, and it must be **voltage-capable** — real-time power *sign*
+  - **A `grid` module is mandatory**, and it must be **voltage-capable** — real-time power *sign*
     (import vs. export) needs a voltage reference. Without it the router cannot decide when to divert.
   - Assign roles with `dev-role <addr> <ch> <role>` (serial) or `POST /api/modules/role`.
 
@@ -151,7 +150,7 @@ Not needed for a standard single-bus build:
 
 ## 1.5 DimmerLink (Dimmer Module)
 
-The DimmerLink module performs phase-cut dimming on its own dedicated controller and takes commands over I2C.
+The DimmerLink module performs phase-cut dimming on its own PY32 controller and takes commands over I2C.
 
 - **I2C address:** **`0x50` is the DimmerLink factory default** (re-addressable with the `dl-address`
   serial command). *(rbAmp, by contrast, ships with no default role/address — you assign it.)*
@@ -186,7 +185,7 @@ needed. If you do need to set it, use the API or serial:
 DL-manager by **slot** (0–7, `DL_MAX_DEVICES = 8`). **Most users never need it** — use the role
 assignment above instead.
 
-> 🔴 **Slot ≠ dimmer id.** The **slot** is the module's registration index inside the DL-manager;
+> **Slot ≠ dimmer id.** The **slot** is the module's registration index inside the DL-manager;
 > the **dimmer id** (e.g. id 4) is the actuation index inside the dimmer manager. They are two
 > separate numbering schemes — don't conflate them.
 
@@ -225,36 +224,25 @@ Re-initializes the bus immediately for testing, but the change is lost on reboot
 The rbAmp and DimmerLink modules operate on the **mains side** of your installation. Treat the whole
 build as a live-mains project.
 
-**Before working with this project:**
-
-1. **Qualifications** — mains electrical work should be performed by qualified personnel.
-2. **De-energize first** — always disconnect power before making or changing connections.
-3. **Verify** — confirm the circuit is dead with a multimeter before touching conductors.
-4. **Insulation** — use properly rated wire, connectors, and CT clamps.
-5. **Protection** — install appropriate fusing plus RCD/GFCI protection for your loads.
-6. **Enclosure** — house all mains connections in a suitable enclosure.
-
-**Isolate low-voltage from mains.** Keep the I2C wiring (SDA / SCL / 3V3 / GND between the host and
-the modules) physically separated from the mains-carrying section. Do not run signal wiring loose
-alongside live conductors.
+> ⚠️ **Any work in the electrical panel must be carried out by a qualified electrician**, in
+> accordance with your local wiring regulations. This guide does not prescribe the electrical
+> installation procedure — that is the electrician's responsibility.
 
 ### Module isolation & USB safety
 
 - **rbAmp** modules are **fully galvanically isolated** (isolation withstand up to **3000 V**) between the
   mains measurement side and the 3V3/I2C logic side — so a **USB connection to the host while the modules
-  are mains-powered is safe**. See **[rbamp.com](https://rbamp.com/?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** for isolation details.
-- 🔴 **DimmerLink** — treat as **non-isolated** unless its own datasheet states otherwise. **Do not
+  are mains-powered is safe**. See **[rbamp.com](https://rbamp.com?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** for isolation details.
+- ⚠️ **DimmerLink** — treat as **non-isolated** unless its own datasheet states otherwise. **Do not
   connect USB/UART to the host while a DimmerLink is under mains.** The DimmerLink's power stage can be
   live-referenced; power the whole build down before plugging in a PC.
 - ⚠️ The general trap is *"isolated sensor, non-isolated supply"*: never power a module from a
   **non-isolated** mains PSU while a PC is attached to the host. With rbAmp's isolated front-end this is
   covered; with DimmerLink, keep the conservative rule above.
 
-**Grounding.** Ensure proper protective-earth grounding of enclosures and metal frames — it is
-essential for safety, independent of the shared signal ground the I2C bus needs (§1.2.3).
-
-> A more detailed electrical-safety reference may be published as a separate page; this callout is
-> the minimum you must observe when wiring an ACRouter.
+**Signal ground.** The I2C bus needs a shared signal ground between the host and the modules
+(§1.2.3). This is a product requirement, separate from any mains-side protective earth — which,
+like the rest of the panel work, is the qualified electrician's domain.
 
 ---
 

@@ -40,6 +40,7 @@ An ACRouter system is an **ESP32-family host** plus one or more **smart I2C modu
 ### Control-loop pipeline (~5 Hz)
 
 
+
 ![rbAmp measures, the host decides the divert level, DimmerLink drives the load — grid exchange trends to zero.](_media/acr-arch-system/out/acr-arch-system.png)
 
 *rbAmp measures, the host decides the divert level, DimmerLink drives the load — grid exchange trends to zero.*
@@ -53,6 +54,7 @@ An ACRouter system is an **ESP32-family host** plus one or more **smart I2C modu
 
 > The control loop and metrics run at roughly **5 Hz**. Measurement now happens *inside* the rbAmp
 > module and arrives over I2C — there is no on-device ADC path.
+
 
 
 ![Firmware is modular: swappable I2C/wireless drivers feed a unified registry and sensor hub; one RouterController task runs the modes; interfaces and storage are capability-gated per target.](_media/acr-firmware-modules/out/acr-firmware-modules.png)
@@ -71,7 +73,7 @@ An ACRouter system is an **ESP32-family host** plus one or more **smart I2C modu
 - **~5 Hz** system update rate.
 
 ### Load Control
-- **Phase-angle dimming via DimmerLink** (0–100%, smooth) on its own dedicated controller.
+- **Phase-angle dimming via DimmerLink** (0–100%, smooth) on its own PY32 controller.
 - Zero-cross synchronization is handled **inside** the DimmerLink module.
 - I2C dimmer outputs start at **id 4** (legacy on-chip dimmer ids 0–3 are retired).
 - **Relay outputs** for on/off loads.
@@ -86,7 +88,7 @@ An ACRouter system is an **ESP32-family host** plus one or more **smart I2C modu
   the SPA).
 - **REST API** — full JSON control/monitoring surface
   ([GET](https://www.rbdimmer.com/acrouter-web-api-get) / [POST](https://www.rbdimmer.com/acrouter-web-api-post)).
-- **MQTT + Home Assistant** auto-discovery, including config-over-MQTT for headless setups.
+- **MQTT + [Home Assistant](https://www.rbdimmer.com/acrouter-home-assistant-integration)** auto-discovery, including config-over-MQTT for headless setups.
 - **OTA** firmware updates (ESP32 tier).
 - **WiFi** AP (192.168.4.1) for setup + STA for normal operation.
 - **Serial console** (115200 baud) for configuration and diagnostics.
@@ -98,6 +100,7 @@ An ACRouter system is an **ESP32-family host** plus one or more **smart I2C modu
 ---
 
 ## 1.4 How the Control Loop Works
+
 
 
 ![Every ~200 ms the controller measures, computes the power balance, and nudges the dimmer toward the active mode's target.](_media/acr-control-loop-cycle/out/acr-control-loop-cycle.png)
@@ -199,15 +202,6 @@ power-rated DimmerLink dimmer with **temperature control** (load-side thermal pr
 | **[K1 Grid Limit](https://www.rbdimmer.com/shop/k1-grid-limit-85?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** | + rbAmp UI (voltage + 1 current channel: `grid`) | The core ACRouter kit — its voltage-capable grid channel senses **direction** (import vs. export), so it avoids paid import, balances `P_grid → 0`, and caps grid draw | + GRID_LIMIT, ECO, AUTO |
 | **[K2 Grid-Solar Balance](https://www.rbdimmer.com/shop/k2-grid-solar-balance-86?utm_source=github&utm_medium=referral&utm_campaign=acrouter)** | + rbAmp UI2 (voltage + 2 current channels: `grid` + `solar`) | Everything K1 does, plus a `solar` channel for **off-grid** operation — routing from measured generation, including while charging batteries | + OFFGRID |
 
-**K0 Schedule** — ESP32 host + DimmerLink dimmer, no measurement:
-![K0 Schedule — use-case diagram](_media/acr-hardware-diagram/ACRouterV2-K0-usecase.png)
-
-**K1 Grid Limit** — adds rbAmp UI (1 current channel on the grid feed):
-![K1 Grid Limit — use-case diagram](_media/acr-hardware-diagram/ACRouterV2-K1-usecase.png)
-
-**K2 Grid-Solar Balance** — rbAmp UI2 (2 current channels: grid + solar):
-![K2 Grid-Solar Balance — use-case diagram](_media/acr-hardware-diagram/ACRouterV2-K2-usecase.png)
-
 Adding rbAmp channels is what unlocks the **closed-loop** modes: the **voltage-capable `grid`** channel
 enables AUTO / ECO / GRID_LIMIT (it must tell import from export), and a `solar` channel adds OFFGRID.
 Start with **K1** for standard self-consumption / anti-import; choose **K2** when you also generate solar
@@ -256,16 +250,16 @@ electricity costs.
 > side — treat the whole build as a live-mains project. See the
 > [Hardware Guide → Safety](https://www.rbdimmer.com/acrouter-hardware-guide) for full requirements.
 
-- **Qualified work only** — de-energize before wiring; use RCD/GFCI protection and proper enclosures.
+- **Qualified electrician for panel work** — any work in the electrical panel must be carried out by a qualified electrician, per your local wiring regulations.
 - **Resistive loads only** — heating elements. **Not** for inductive loads (motors, transformers) or
   electronics (LED drivers, power supplies).
 - **Power** — the maximum is set by your DimmerLink/load rating; provide cooling for high loads.
 - **Grid** — a stable 50/60 Hz supply is assumed.
-- 🔴 **CT polarity is safety-critical.** If the grid CT is reversed, `power_grid`'s sign flips and AUTO
+- ⚠️ **CT polarity is safety-critical.** If the grid CT is reversed, `power_grid`'s sign flips and AUTO
   runs the wrong way — driving the dimmer to 100% while importing (maximum grid draw, breaker-trip
   risk). Verify the grid sign under a known load **before** enabling AUTO (see
   [Commissioning](https://www.rbdimmer.com/acrouter-commissioning)).
-- 🔴 **Sensor-loss failsafe.** If the regulating sensor is lost (or all sources fall silent), the
+- ⚠️ **Sensor-loss failsafe.** If the regulating sensor is lost (or all sources fall silent), the
   controller **decays the dimmer toward 0%** (~1%/cycle, ~20 s) rather than holding the last level —
   AUTO/ECO/GRID_LIMIT and OFFGRID all fail toward off. Still provide an **external emergency disconnect**
   (a contactor) as defense-in-depth.

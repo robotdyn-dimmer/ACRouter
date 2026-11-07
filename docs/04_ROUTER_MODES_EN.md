@@ -22,12 +22,14 @@ The `grid` and `solar` roles are assigned per rbAmp channel during
 voltage-capable module so it reports **signed** power (import vs. export).
 
 
+
 ![The Dashboard exposes six mode buttons; GRID_LIMIT is reached only through the API.](_media/acr-ss-mode-selector/out/acr-ss-mode-selector.final.png)
 
 *The Dashboard exposes six mode buttons; GRID_LIMIT is reached only through the API.*
 
 > The web app exposes six mode buttons (OFF/AUTO/ECO/OFFGRID/MANUAL/BOOST). **GRID_LIMIT is an advanced
 > mode reached through the device API**, not a Dashboard button.
+
 
 
 ![Seven modes, from full automatic solar routing (AUTO) to manual and grid-cap control.](_media/acr-modes-overview/out/acr-modes-overview.png)
@@ -52,6 +54,7 @@ Balances grid power to zero: it raises the dimmer when you'd otherwise export, a
 import, so all solar surplus is consumed locally.
 
 
+
 ![AUTO regulates in both directions to zero; ECO only trims import; GRID_LIMIT caps grid current.](_media/acr-mode-decision/out/acr-mode-decision.png)
 
 *AUTO regulates in both directions to zero; ECO only trims import; GRID_LIMIT caps grid current.*
@@ -69,6 +72,7 @@ dead-zone are tunable via `POST /api/config`; defaults suit most installs.)*
 **With multiple loads**, AUTO runs a **priority cascade**: it fills the highest-priority dimmer first and
 spills surplus to the next dimmer as each saturates; for large surpluses it also switches on GPIO relays
 (by priority). Set per-device priority with `dimmer-priority` / `relay-priority`.
+
 
 
 ![In AUTO, surplus fills the highest-priority dimmer first and spills to the next device; relays switch on for large surpluses.](_media/acr-priority-cascade/out/acr-priority-cascade.png)
@@ -124,11 +128,12 @@ curl -X POST http://192.168.4.1/api/mode -d '{"mode":"eco"}'
 ```
 
 
+
 ![Lose the regulating sensor and the controller ramps the load down to zero (~20 s) rather than holding it.](_media/acr-failsafe-decay/out/acr-failsafe-decay.png)
 
 *Lose the regulating sensor and the controller ramps the load down to zero (~20 s) rather than holding it.*
 
-> 🔴 **Sensor-loss failsafe (AUTO / ECO / GRID_LIMIT).** If the regulating sensor goes stale or is lost
+> ⚠️ **Sensor-loss failsafe (AUTO / ECO / GRID_LIMIT).** If the regulating sensor goes stale or is lost
 > (grid power in AUTO/ECO, grid current in GRID_LIMIT), or **all** sources fall silent, the controller
 > does **not** hold the last level — it **decays the dimmer toward 0%** (≈ −1% per control cycle, ~20 s
 > to zero on the 5 Hz path). OFFGRID decays the same way when solar is lost; OFF / MANUAL / BOOST hold
@@ -141,6 +146,7 @@ curl -X POST http://192.168.4.1/api/mode -d '{"mode":"eco"}'
 
 For systems with no grid connection. OFFGRID needs a **`solar`** measurement channel (not grid; it can be
 an rbAmp or an ESP-NOW node) and ignores the grid.
+
 
 
 ![OFFGRID ramps the load up toward 80% of solar and holds high while the sun lasts, decaying to zero only when solar is lost.](_media/acr-offgrid-ramp/out/acr-offgrid-ramp.png)

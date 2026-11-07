@@ -134,7 +134,7 @@ Set the host hardware configuration (I2C bus pins, relay GPIOs, status LEDs). Wr
 - Relays are the objects **`relay_ch1`** / **`relay_ch2`** (host-GPIO, ids 0–3), **not** a `relays[]`
   array (the array is the GET *response* shape). LED pin defaults (17 / 5) are **ESP32-specific** — on a
   C2 they clash with the I2C SDA / flash pins, so reassign them there.
-- 🔴 **Dimmers are not configured here.** There is no GPIO/TRIAC dimmer in v2.0 — dimmers are DimmerLink
+- **Dimmers are not configured here.** There is no GPIO/TRIAC dimmer in v2.0 — dimmers are DimmerLink
   modules, set up by role assignment ([Commissioning](https://www.rbdimmer.com/acrouter-commissioning)).
   The v1.x keys `dimmer_ch*`, `zerocross_*`, and `adc_channels[]` are gone / ignored — don't send them.
 - **Partial bodies merge per-key** — a key you omit keeps its current value (this holds for `i2c.busN`

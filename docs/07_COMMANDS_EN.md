@@ -185,7 +185,7 @@ rbDimmer ecosystem for LED loads — **not for ACRouter**, which drives resistiv
 | `mqtt-user <name>` · `mqtt-pass <pass>` | Credentials |
 | `mqtt-device-id <id>` · `mqtt-device-name <n>` | Device id / name (HA) |
 | `mqtt-interval <ms>` | Publish interval (1000–60000) |
-| `mqtt-ha-discovery <0\|1>` | Enable/disable Home Assistant discovery |
+| `mqtt-ha-discovery <0\|1>` | Enable/disable [Home Assistant discovery](https://www.rbdimmer.com/acrouter-home-assistant-integration) |
 | `mqtt-enable` / `mqtt-disable` | Enable / disable MQTT |
 | `mqtt-reconnect` / `mqtt-publish` | Force reconnect / publish |
 

@@ -41,7 +41,7 @@ curl -X POST http://192.168.4.1/api/rbamp/modules/ct-model \
 
 ## 10.2 Set It Once — the Overwrite Caveat
 
-> 🔴 **Choose the CT model once, for your actual clamp — don't toggle it.**
+> **Choose the CT model once, for your actual clamp — don't toggle it.**
 
 Applying a CT model loads that model's **factory gain preset**, which **overwrites** the module's
 per-unit factory gain calibration. To protect against needless overwrites, ACRouter uses
