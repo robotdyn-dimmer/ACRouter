@@ -68,7 +68,7 @@ ACRouter v2.0 moves sensing and dimming off the host board and onto **smart modu
 
 ### 📱 Configuration & Integration
 - Built-in WiFi Access Point for first-time setup
-- **External web app** with real-time dashboard, module management, and mode control (see [Web App](#web-app) below)
+- **External web app** with real-time dashboard, module management, and mode control (not yet publicly hosted — see [Web App](#web-app))
 - **REST API** (`/api/*`) — see [Web API GET](docs/08_WEB_API_GET_EN.md) / [Web API POST](docs/09_WEB_API_POST_EN.md)
 - **MQTT** client with LWT + **Home Assistant auto-discovery**; config-over-MQTT for headless devices
 - Serial console for advanced users
@@ -145,7 +145,9 @@ Start with **K1** for standard self-consumption / anti-import; choose **K2** whe
 
 ## Web App
 
-ACRouter ships with an **external web application** that communicates with the device over the REST API. The device itself acts as a headless JSON/MQTT API — on first access it redirects the browser to the web app.
+ACRouter is designed to be operated from an **external web application** that talks to the device over the REST API. The device itself is a headless JSON/MQTT API and does not host the dashboard. Once a web-app URL is configured (`POST /api/web/config` or serial `web-url set <url>`), opening the device's address redirects the browser there; without one, the device shows a short info page.
+
+> **Availability:** the web app is not publicly hosted yet. Until it is, set up and run the device from the on-device WiFi page, the serial console, the REST API, or MQTT / Home Assistant — see [Quick Start](#quick-start). The screenshots below show the app as it looks today.
 
 <p align="center">
   <img src="docs/_media/acr-ss-dashboard/out/acr-ss-dashboard.final.png" alt="ACRouter Dashboard" width="700">
@@ -205,9 +207,9 @@ After flashing, the device creates a WiFi access point:
 
 ### 3. Configure
 
-1. Connect to the ACRouter WiFi network and open `http://192.168.4.1`
-2. Set your home WiFi (and, for headless builds, the MQTT broker) via the on-device page or the serial console
-3. Point the device at the web app, or use the REST/MQTT API directly
+1. **ESP32 Full / C2-HTTP:** connect to the `ACRouter_XXXX` network and open the WiFi setup page at `http://192.168.4.1/wifi` to join your home network. You can also use the serial console: `wifi-connect <ssid> [password]`.
+2. **C2-MQTT** has no web server: set WiFi and the broker from the serial console — `wifi-connect <ssid> [password]`, then `mqtt-broker mqtt://<host>:1883`.
+3. Once the device is on your network, configure and control it through the [REST API](#rest-api) at the device's IP (ESP32 Full, C2-HTTP) or through MQTT / Home Assistant (ESP32 Full, C2-MQTT).
 4. Discover the rbAmp/DimmerLink modules, assign roles, pick the CT model, and select a mode
 
 Full commissioning steps are in the [documentation](#documentation).
